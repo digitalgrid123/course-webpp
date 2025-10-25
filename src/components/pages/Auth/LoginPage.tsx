@@ -33,7 +33,7 @@ export default function LoginPage() {
   const validationSchema = Yup.object().shape({
     email: Yup.string().email(t("emailInvalid")).required(t("emailRequired")),
     password: Yup.string()
-      .min(6, t("passwordMinLength"))
+      .min(8, t("passwordMinLength"))
       .required(t("passwordRequired")),
   });
 

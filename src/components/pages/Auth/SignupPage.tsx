@@ -40,7 +40,7 @@ export default function SignupPage() {
     last_name: Yup.string().required(t("lastNameRequired")),
     email: Yup.string().email(t("emailInvalid")).required(t("emailRequired")),
     password: Yup.string()
-      .min(6, t("passwordMinLength"))
+      .min(8, t("passwordMinLength"))
       .required(t("passwordRequired")),
     password_confirmation: Yup.string()
       .oneOf([Yup.ref("password"), undefined], t("passwordsMustMatch"))
