@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { DownloadCard } from "./components/DownloadCard/DownloadCard";
 import { VideoPlayer } from "./components/VideoPlayer/VideoPlayer";
-
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/store";
 import {
@@ -58,10 +57,18 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
   useEffect(() => {
     if (selectedLesson && courseDetail) {
+      // Reset the initialization flag
+      hasInitializedProgress.current = false;
+
+      // Get the saved progress for the current lesson
       const savedProgress = getCurrentLessonProgress();
+
+      // Set all progress states to the saved value
       setInitialProgress(savedProgress);
       setCurrentProgress(savedProgress);
       setLastProgressUpdate(savedProgress);
+
+      // Mark as initialized
       hasInitializedProgress.current = true;
 
       console.log("Initialized lesson progress:", {
@@ -178,11 +185,30 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
   const handleLessonClick = (lessonId: number) => {
     if (selectedLesson && currentProgress > initialProgress) {
+      // Save progress for the previous lesson before switching
       sendProgressUpdate(selectedLesson, currentProgress);
     }
 
+    // Update selected lesson
     setSelectedLesson(lessonId);
+
+    // Reset progress states to the new lesson's saved progress
+    const savedProgress =
+      courseDetail?.modules
+        ?.flatMap((m) => m.lessons)
+        ?.find((l) => l.id === lessonId)?.watched_progress || 0;
+    setCurrentProgress(savedProgress);
+    setInitialProgress(savedProgress);
+    setLastProgressUpdate(savedProgress);
+
+    // Reset initialization flag to trigger useEffect
     hasInitializedProgress.current = false;
+
+    console.log("Switching to lesson:", {
+      lessonId,
+      savedProgress,
+      timestamp: new Date().toISOString(),
+    });
   };
 
   const debouncedProgressUpdate = useCallback(
@@ -261,7 +287,12 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
   const handleVideoPause = useCallback(
     (data: { played: number; currentTime: number; duration: number }) => {
-      if (!selectedLesson || !hasInitializedProgress.current) return;
+      if (!selectedLesson || !hasInitializedProgress.current) {
+        console.log(
+          "Pause event ignored: No selected lesson or not initialized"
+        );
+        return;
+      }
 
       const currentSavedProgress = getCurrentLessonProgress();
 
@@ -270,22 +301,44 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
         return;
       }
 
-      const progressPercentage = Math.floor(data.played * 100);
+      if (
+        !data ||
+        !Number.isFinite(data.played) ||
+        !Number.isFinite(data.duration)
+      ) {
+        console.log("Invalid pause data:", data);
+        return;
+      }
+
+      const progressPercentage = Math.floor(
+        (data.currentTime / data.duration) * 100
+      );
 
       const finalProgress = Math.max(
         progressPercentage,
         currentSavedProgress,
         initialProgress
       );
-      setCurrentProgress(finalProgress);
 
       if (finalProgress > currentSavedProgress) {
+        setCurrentProgress(finalProgress);
         sendProgressUpdate(selectedLesson, finalProgress);
 
         console.log("Video Paused - Progress Saved:", {
           lessonId: selectedLesson,
           progress: finalProgress,
           previousProgress: currentSavedProgress,
+          currentTime: Math.floor(data.currentTime),
+          duration: Math.floor(data.duration),
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        console.log("Pause event: No progress update needed", {
+          lessonId: selectedLesson,
+          progress: finalProgress,
+          savedProgress: currentSavedProgress,
+          currentTime: Math.floor(data.currentTime),
+          duration: Math.floor(data.duration),
           timestamp: new Date().toISOString(),
         });
       }
@@ -449,7 +502,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-8 py-8" dir="">
+    <div className="min-h-screen bg-white px-8 py-8" dir="rtl">
       <Breadcrumb
         items={[
           { label: "ראשי" },

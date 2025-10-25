@@ -46,17 +46,23 @@ const initialState: CourseState = {
   successMessage: null,
 };
 
+// FIXED: More robust localStorage functions with proper key structure
 const saveProgressToLocalStorage = (
   courseId: number,
   lessonId: number,
   progress: number
 ) => {
   try {
+    // Use a unique key for each course-lesson combination
     const key = `lesson_progress_${courseId}_${lessonId}`;
-    localStorage.setItem(
-      key,
-      JSON.stringify({ progress, timestamp: Date.now() })
-    );
+    const data = {
+      progress,
+      timestamp: Date.now(),
+      courseId,
+      lessonId,
+    };
+    localStorage.setItem(key, JSON.stringify(data));
+    console.log(`✅ Saved to localStorage: ${key} = ${progress}%`);
   } catch (error) {
     console.error("Failed to save progress to localStorage:", error);
   }
@@ -69,9 +75,15 @@ const getProgressFromLocalStorage = (
   try {
     const key = `lesson_progress_${courseId}_${lessonId}`;
     const data = localStorage.getItem(key);
+
     if (data) {
       const parsed = JSON.parse(data);
+      console.log(
+        `📖 Retrieved from localStorage: ${key} = ${parsed.progress}%`
+      );
       return parsed.progress;
+    } else {
+      console.log(`📖 No localStorage data for: ${key}`);
     }
   } catch (error) {
     console.error("Failed to get progress from localStorage:", error);
@@ -154,6 +166,7 @@ export const fetchCourseDetail = createAsyncThunk<
   try {
     const response = await getCourseDetailApi(request);
     if (response.status && response.data) {
+      // FIXED: Merge localStorage progress with server progress
       response.data.modules.forEach((module) => {
         module.lessons.forEach((lesson) => {
           const localProgress = getProgressFromLocalStorage(
@@ -161,12 +174,16 @@ export const fetchCourseDetail = createAsyncThunk<
             lesson.id
           );
 
-          const maxProgress = Math.max(
-            lesson.watched_progress || 0,
-            localProgress || 0
-          );
-          if (maxProgress > (lesson.watched_progress || 0)) {
+          // Use the MAXIMUM of server progress and local progress
+          const serverProgress = lesson.watched_progress || 0;
+          const maxProgress = Math.max(serverProgress, localProgress || 0);
+
+          // Only update if local progress is higher
+          if (maxProgress > serverProgress) {
             lesson.watched_progress = maxProgress;
+            console.log(
+              `🔄 Updated lesson ${lesson.id} progress: ${serverProgress}% → ${maxProgress}%`
+            );
           }
         });
       });
@@ -210,6 +227,7 @@ export const updateLessonProgress = createAsyncThunk<
     const { courseId, ...apiRequest } = request;
     const response = await updateLessonProgressApi(apiRequest);
     if (response.status) {
+      // Save to localStorage regardless of API response
       saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
 
       return {
@@ -220,6 +238,9 @@ export const updateLessonProgress = createAsyncThunk<
         courseId: courseId,
       };
     } else {
+      // Even if API fails, save to localStorage
+      saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
+
       return rejectWithValue({
         message: response.message || "Failed to update progress",
         errors: response.errors ?? undefined,
@@ -271,14 +292,18 @@ const courseSlice = createSlice({
 
       const { lessonId, progress, courseId } = action.payload;
 
+      // Save to localStorage first
       saveProgressToLocalStorage(courseId, lessonId, progress);
 
+      // Update Redux state
       for (const courseModule of state.courseDetail.modules) {
         const lesson = courseModule.lessons.find((l) => l.id === lessonId);
         if (lesson) {
+          // FIXED: Only update if new progress is higher
           if (progress > (lesson.watched_progress || 0)) {
             lesson.watched_progress = progress;
 
+            // Recalculate module progress
             const totalLessons = courseModule.lessons.length;
             const totalProgress = courseModule.lessons.reduce(
               (sum, l) => sum + (l.watched_progress || 0),
@@ -287,6 +312,7 @@ const courseSlice = createSlice({
             courseModule.module_watched_percentage =
               totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
 
+            // Recalculate course progress
             const allLessons = state.courseDetail.modules.flatMap(
               (m) => m.lessons
             );
@@ -365,7 +391,7 @@ const courseSlice = createSlice({
       })
       .addCase(updateLessonProgress.fulfilled, (state, action) => {
         state.progressLoading = false;
-        console.log("Progress updated:", action.payload.message);
+        console.log("✅ Progress updated:", action.payload.message);
 
         if (state.courseDetail) {
           const { lessonId, progress } = action.payload;
@@ -373,9 +399,11 @@ const courseSlice = createSlice({
           for (const courseModule of state.courseDetail.modules) {
             const lesson = courseModule.lessons.find((l) => l.id === lessonId);
             if (lesson) {
+              // FIXED: Only update if new progress is higher
               if (progress > (lesson.watched_progress || 0)) {
                 lesson.watched_progress = progress;
 
+                // Recalculate module progress
                 const totalLessons = courseModule.lessons.length;
                 const totalProgress = courseModule.lessons.reduce(
                   (sum, l) => sum + (l.watched_progress || 0),
@@ -386,6 +414,7 @@ const courseSlice = createSlice({
                     ? Math.round(totalProgress / totalLessons)
                     : 0;
 
+                // Recalculate course progress
                 const allLessons = state.courseDetail.modules.flatMap(
                   (m) => m.lessons
                 );
@@ -408,7 +437,7 @@ const courseSlice = createSlice({
       })
       .addCase(updateLessonProgress.rejected, (state, action) => {
         state.progressLoading = false;
-        console.error("Progress update failed:", action.payload?.message);
+        console.error("❌ Progress update failed:", action.payload?.message);
       });
   },
 });
