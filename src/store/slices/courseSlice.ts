@@ -46,6 +46,41 @@ const initialState: CourseState = {
   successMessage: null,
 };
 
+// Helper function to save progress to localStorage
+const saveProgressToLocalStorage = (
+  courseId: number,
+  lessonId: number,
+  progress: number
+) => {
+  try {
+    const key = `lesson_progress_${courseId}_${lessonId}`;
+    localStorage.setItem(
+      key,
+      JSON.stringify({ progress, timestamp: Date.now() })
+    );
+  } catch (error) {
+    console.error("Failed to save progress to localStorage:", error);
+  }
+};
+
+// Helper function to get progress from localStorage
+const getProgressFromLocalStorage = (
+  courseId: number,
+  lessonId: number
+): number | null => {
+  try {
+    const key = `lesson_progress_${courseId}_${lessonId}`;
+    const data = localStorage.getItem(key);
+    if (data) {
+      const parsed = JSON.parse(data);
+      return parsed.progress;
+    }
+  } catch (error) {
+    console.error("Failed to get progress from localStorage:", error);
+  }
+  return null;
+};
+
 export const fetchDashboardHome = createAsyncThunk<
   { data: UserProfile; message: string },
   void,
@@ -121,6 +156,24 @@ export const fetchCourseDetail = createAsyncThunk<
   try {
     const response = await getCourseDetailApi(request);
     if (response.status && response.data) {
+      // Sync localStorage with API data for all lessons
+      response.data.modules.forEach((module) => {
+        module.lessons.forEach((lesson) => {
+          const localProgress = getProgressFromLocalStorage(
+            response.data.id,
+            lesson.id
+          );
+          // Use the maximum of API progress and local progress
+          const maxProgress = Math.max(
+            lesson.watched_progress || 0,
+            localProgress || 0
+          );
+          if (maxProgress > (lesson.watched_progress || 0)) {
+            lesson.watched_progress = maxProgress;
+          }
+        });
+      });
+
       return { data: response.data, message: response.message };
     } else {
       return rejectWithValue({
@@ -151,18 +204,24 @@ export const updateLessonProgress = createAsyncThunk<
     message: string;
     lessonId: number;
     progress: number;
+    courseId: number;
   },
-  LessonProgressRequest,
+  LessonProgressRequest & { courseId: number },
   { rejectValue: ErrorResponse }
 >("course/updateLessonProgress", async (request, { rejectWithValue }) => {
   try {
-    const response = await updateLessonProgressApi(request);
+    const { courseId, ...apiRequest } = request;
+    const response = await updateLessonProgressApi(apiRequest);
     if (response.status) {
+      // Save to localStorage on successful API update
+      saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
+
       return {
         data: response.data || null,
         message: response.message || "Progress updated successfully",
         lessonId: request.lesson_id,
         progress: request.progress,
+        courseId: courseId,
       };
     } else {
       return rejectWithValue({
@@ -205,43 +264,51 @@ const courseSlice = createSlice({
     clearMyCourses: (state) => {
       state.myCourses = null;
     },
-    // New reducer to update local progress optimistically
+    // Optimistically update local progress
     updateLocalProgress: (
       state,
-      action: { payload: { lessonId: number; progress: number } }
+      action: {
+        payload: { lessonId: number; progress: number; courseId: number };
+      }
     ) => {
       if (!state.courseDetail) return;
 
-      const { lessonId, progress } = action.payload;
+      const { lessonId, progress, courseId } = action.payload;
+
+      // Save to localStorage immediately
+      saveProgressToLocalStorage(courseId, lessonId, progress);
 
       // Find and update the lesson progress
       for (const courseModule of state.courseDetail.modules) {
         const lesson = courseModule.lessons.find((l) => l.id === lessonId);
         if (lesson) {
-          lesson.watched_progress = progress;
+          // Only update if new progress is greater than current
+          if (progress > (lesson.watched_progress || 0)) {
+            lesson.watched_progress = progress;
 
-          // Recalculate module progress
-          const totalLessons = courseModule.lessons.length;
-          const totalProgress = courseModule.lessons.reduce(
-            (sum, l) => sum + (l.watched_progress || 0),
-            0
-          );
-          courseModule.module_watched_percentage =
-            totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
+            // Recalculate module progress
+            const totalLessons = courseModule.lessons.length;
+            const totalProgress = courseModule.lessons.reduce(
+              (sum, l) => sum + (l.watched_progress || 0),
+              0
+            );
+            courseModule.module_watched_percentage =
+              totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
 
-          // Recalculate course progress
-          const allLessons = state.courseDetail.modules.flatMap(
-            (m) => m.lessons
-          );
-          const allLessonsCount = allLessons.length;
-          const allLessonsProgress = allLessons.reduce(
-            (sum, l) => sum + (l.watched_progress || 0),
-            0
-          );
-          state.courseDetail.course_watched_percentage =
-            allLessonsCount > 0
-              ? Math.round((allLessonsProgress / allLessonsCount) * 100) / 100
-              : 0;
+            // Recalculate course progress
+            const allLessons = state.courseDetail.modules.flatMap(
+              (m) => m.lessons
+            );
+            const allLessonsCount = allLessons.length;
+            const allLessonsProgress = allLessons.reduce(
+              (sum, l) => sum + (l.watched_progress || 0),
+              0
+            );
+            state.courseDetail.course_watched_percentage =
+              allLessonsCount > 0
+                ? Math.round((allLessonsProgress / allLessonsCount) * 100) / 100
+                : 0;
+          }
 
           break;
         }
@@ -316,31 +383,36 @@ const courseSlice = createSlice({
           for (const courseModule of state.courseDetail.modules) {
             const lesson = courseModule.lessons.find((l) => l.id === lessonId);
             if (lesson) {
-              lesson.watched_progress = progress;
+              // Only update if new progress is greater
+              if (progress > (lesson.watched_progress || 0)) {
+                lesson.watched_progress = progress;
 
-              // Recalculate module progress
-              const totalLessons = courseModule.lessons.length;
-              const totalProgress = courseModule.lessons.reduce(
-                (sum, l) => sum + (l.watched_progress || 0),
-                0
-              );
-              courseModule.module_watched_percentage =
-                totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
+                // Recalculate module progress
+                const totalLessons = courseModule.lessons.length;
+                const totalProgress = courseModule.lessons.reduce(
+                  (sum, l) => sum + (l.watched_progress || 0),
+                  0
+                );
+                courseModule.module_watched_percentage =
+                  totalLessons > 0
+                    ? Math.round(totalProgress / totalLessons)
+                    : 0;
 
-              // Recalculate course progress
-              const allLessons = state.courseDetail.modules.flatMap(
-                (m) => m.lessons
-              );
-              const allLessonsCount = allLessons.length;
-              const allLessonsProgress = allLessons.reduce(
-                (sum, l) => sum + (l.watched_progress || 0),
-                0
-              );
-              state.courseDetail.course_watched_percentage =
-                allLessonsCount > 0
-                  ? Math.round((allLessonsProgress / allLessonsCount) * 100) /
-                    100
-                  : 0;
+                // Recalculate course progress
+                const allLessons = state.courseDetail.modules.flatMap(
+                  (m) => m.lessons
+                );
+                const allLessonsCount = allLessons.length;
+                const allLessonsProgress = allLessons.reduce(
+                  (sum, l) => sum + (l.watched_progress || 0),
+                  0
+                );
+                state.courseDetail.course_watched_percentage =
+                  allLessonsCount > 0
+                    ? Math.round((allLessonsProgress / allLessonsCount) * 100) /
+                      100
+                    : 0;
+              }
 
               break;
             }

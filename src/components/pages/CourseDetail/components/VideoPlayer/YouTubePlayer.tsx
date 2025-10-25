@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 
 interface YouTubePlayerProps {
   videoId: string;
+  initialProgress?: number;
   onProgress?: (data: {
     played: number;
     currentTime: number;
@@ -25,12 +26,14 @@ declare global {
 
 export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   videoId,
+  initialProgress = 0,
   onProgress,
   onPause,
 }) => {
   const playerRef = useRef<YT.Player | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasSetInitialProgress = useRef(false);
   const [isAPIReady, setIsAPIReady] = useState(false);
 
   const sendProgressData = useCallback(() => {
@@ -73,7 +76,29 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   const onPlayerReady = useCallback(() => {
     setIsAPIReady(true);
-  }, []);
+
+    // Set initial progress when player is ready
+    const player = playerRef.current;
+    if (player && initialProgress > 0 && !hasSetInitialProgress.current) {
+      try {
+        const duration = player.getDuration();
+        if (duration > 0) {
+          const seekTime = (initialProgress / 100) * duration;
+          player.seekTo(seekTime, true);
+          hasSetInitialProgress.current = true;
+
+          console.log("YouTube Player: Seeked to initial progress", {
+            initialProgress,
+            seekTime,
+            duration,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        console.error("Error setting initial progress:", error);
+      }
+    }
+  }, [initialProgress]);
 
   const stopProgressTracking = useCallback(() => {
     if (progressIntervalRef.current) {
@@ -96,6 +121,30 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
       if (event.data === YT.PlayerState.PLAYING) {
         // Playing
         startProgressTracking();
+
+        // Set initial progress on first play if not already set
+        const player = playerRef.current;
+        if (player && initialProgress > 0 && !hasSetInitialProgress.current) {
+          try {
+            const duration = player.getDuration();
+            if (duration > 0) {
+              const seekTime = (initialProgress / 100) * duration;
+              player.seekTo(seekTime, true);
+              hasSetInitialProgress.current = true;
+
+              console.log(
+                "YouTube Player: Seeked to initial progress on play",
+                {
+                  initialProgress,
+                  seekTime,
+                  duration,
+                }
+              );
+            }
+          } catch (error) {
+            console.error("Error setting initial progress on play:", error);
+          }
+        }
       } else if (event.data === YT.PlayerState.PAUSED) {
         // Paused
         stopProgressTracking();
@@ -116,7 +165,13 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         stopProgressTracking();
       }
     },
-    [onProgress, startProgressTracking, stopProgressTracking, sendPauseData]
+    [
+      onProgress,
+      initialProgress,
+      startProgressTracking,
+      stopProgressTracking,
+      sendPauseData,
+    ]
   );
 
   // Handle visibility change - save progress when tab becomes hidden
@@ -141,6 +196,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     };
   }, [sendPauseData]);
 
+  // Reset hasSetInitialProgress when videoId changes
+  useEffect(() => {
+    hasSetInitialProgress.current = false;
+  }, [videoId]);
+
   useEffect(() => {
     if (!window.YT) {
       const tag = document.createElement("script");
@@ -161,6 +221,10 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
             rel: 0,
             modestbranding: 1,
             fs: 1,
+            start:
+              initialProgress > 0
+                ? Math.floor((initialProgress / 100) * 1000)
+                : undefined,
           },
           events: {
             onReady: onPlayerReady,
@@ -181,7 +245,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
         clearInterval(progressIntervalRef.current);
       playerRef.current?.destroy();
     };
-  }, [videoId, onPlayerReady, onPlayerStateChange]);
+  }, [videoId, initialProgress, onPlayerReady, onPlayerStateChange]);
 
   return (
     <div className="bg-white rounded-4xl shadow-md overflow-hidden">
@@ -204,6 +268,11 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                 />
               </svg>
               <p className="text-sm">Loading video...</p>
+              {initialProgress > 0 && (
+                <p className="text-xs text-gray-400 mt-2">
+                  Resuming from {initialProgress}%
+                </p>
+              )}
             </div>
           </div>
         )}

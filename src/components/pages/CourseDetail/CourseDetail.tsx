@@ -30,9 +30,11 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
   const [lastProgressUpdate, setLastProgressUpdate] = useState<number>(0);
   const [currentProgress, setCurrentProgress] = useState<number>(0);
+  const [initialProgress, setInitialProgress] = useState<number>(0);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const progressUpdateRef = useRef<NodeJS.Timeout | null>(null);
+  const hasInitializedProgress = useRef<boolean>(false);
 
   const { courseDetail, detailLoading, error } = useSelector(
     (state: RootState) => state.course
@@ -43,7 +45,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   // Check if course is already in cart
   const isInCart = cartItems.some((item) => item.id === courseDetail?.id);
 
-  // Get current lesson's watched progress
+  // Get current lesson's watched progress from Redux
   const getCurrentLessonProgress = useCallback(() => {
     if (!courseDetail?.modules || !selectedLesson) return 0;
 
@@ -56,13 +58,42 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     return 0;
   }, [courseDetail, selectedLesson]);
 
+  // Initialize progress when lesson changes
+  useEffect(() => {
+    if (selectedLesson && courseDetail) {
+      const savedProgress = getCurrentLessonProgress();
+      setInitialProgress(savedProgress);
+      setCurrentProgress(savedProgress);
+      setLastProgressUpdate(savedProgress);
+      hasInitializedProgress.current = true;
+
+      console.log("Initialized lesson progress:", {
+        lessonId: selectedLesson,
+        savedProgress,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [selectedLesson, courseDetail, getCurrentLessonProgress]);
+
   // Function to send progress update immediately
   const sendProgressUpdate = useCallback(
     (lessonId: number, progressPercentage: number) => {
-      // Check if lesson is already completed (100%)
-      const currentLessonProgress = getCurrentLessonProgress();
+      if (!courseDetail) return;
 
-      if (currentLessonProgress >= 100) {
+      // Get current saved progress
+      const currentSavedProgress = getCurrentLessonProgress();
+
+      // Only update if new progress is greater than saved progress
+      if (progressPercentage <= currentSavedProgress) {
+        console.log("Progress not greater than saved, skipping update:", {
+          current: progressPercentage,
+          saved: currentSavedProgress,
+        });
+        return;
+      }
+
+      // Don't update if already at 100%
+      if (currentSavedProgress >= 100) {
         console.log("Lesson already completed, skipping progress update");
         return;
       }
@@ -70,7 +101,11 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       if (lessonId && progressPercentage > 0) {
         // Update local state optimistically
         dispatch(
-          updateLocalProgress({ lessonId, progress: progressPercentage })
+          updateLocalProgress({
+            lessonId,
+            progress: progressPercentage,
+            courseId: courseDetail.id,
+          })
         );
 
         // Send to backend
@@ -78,26 +113,26 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
           updateLessonProgress({
             lesson_id: lessonId,
             progress: progressPercentage,
+            courseId: courseDetail.id,
           })
         );
+
         console.log("Progress saved:", {
           lessonId,
           progress: progressPercentage,
+          previousProgress: currentSavedProgress,
           timestamp: new Date().toISOString(),
         });
       }
     },
-    [dispatch, getCurrentLessonProgress]
+    [dispatch, getCurrentLessonProgress, courseDetail]
   );
 
   // Handle page unload/refresh - save progress before leaving
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (selectedLesson && currentProgress > 0) {
-        const currentLessonProgress = getCurrentLessonProgress();
-        if (currentLessonProgress < 100) {
-          sendProgressUpdate(selectedLesson, currentProgress);
-        }
+      if (selectedLesson && currentProgress > initialProgress) {
+        sendProgressUpdate(selectedLesson, currentProgress);
       }
     };
 
@@ -106,32 +141,19 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [
-    selectedLesson,
-    currentProgress,
-    sendProgressUpdate,
-    getCurrentLessonProgress,
-  ]);
+  }, [selectedLesson, currentProgress, initialProgress, sendProgressUpdate]);
 
   // Handle component unmount - save progress when navigating away
   useEffect(() => {
     return () => {
-      if (selectedLesson && currentProgress > 0) {
-        const currentLessonProgress = getCurrentLessonProgress();
-        if (currentLessonProgress < 100) {
-          sendProgressUpdate(selectedLesson, currentProgress);
-        }
+      if (selectedLesson && currentProgress > initialProgress) {
+        sendProgressUpdate(selectedLesson, currentProgress);
       }
       if (progressUpdateRef.current) {
         clearTimeout(progressUpdateRef.current);
       }
     };
-  }, [
-    selectedLesson,
-    currentProgress,
-    sendProgressUpdate,
-    getCurrentLessonProgress,
-  ]);
+  }, [selectedLesson, currentProgress, initialProgress, sendProgressUpdate]);
 
   useEffect(() => {
     if (id) {
@@ -148,7 +170,11 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
   // Set default module and lesson when course data loads
   useEffect(() => {
-    if (courseDetail?.modules && courseDetail.modules.length > 0) {
+    if (
+      courseDetail?.modules &&
+      courseDetail.modules.length > 0 &&
+      selectedLesson === null
+    ) {
       const firstModule = courseDetail.modules[0];
       setSelectedModule(firstModule.id);
 
@@ -156,7 +182,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
         setSelectedLesson(firstModule.lessons[0].id);
       }
     }
-  }, [courseDetail]);
+  }, [courseDetail, selectedLesson]);
 
   const handleModuleClick = (moduleId: number) => {
     setSelectedModule(selectedModule === moduleId ? null : moduleId);
@@ -164,25 +190,27 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
   const handleLessonClick = (lessonId: number) => {
     // Save progress for current lesson before switching
-    if (selectedLesson && currentProgress > 0) {
-      const currentLessonProgress = getCurrentLessonProgress();
-      if (currentLessonProgress < 100) {
-        sendProgressUpdate(selectedLesson, currentProgress);
-      }
+    if (selectedLesson && currentProgress > initialProgress) {
+      sendProgressUpdate(selectedLesson, currentProgress);
     }
 
     setSelectedLesson(lessonId);
-    setLastProgressUpdate(0);
-    setCurrentProgress(0);
+    hasInitializedProgress.current = false;
   };
 
   // Debounced progress update to prevent too many API calls
   const debouncedProgressUpdate = useCallback(
     (lessonId: number, progressPercentage: number) => {
-      // Check if lesson is already completed
-      const currentLessonProgress = getCurrentLessonProgress();
-      if (currentLessonProgress >= 100) {
+      const currentSavedProgress = getCurrentLessonProgress();
+
+      // Don't debounce if already at 100%
+      if (currentSavedProgress >= 100) {
         console.log("Lesson already completed, skipping debounced update");
+        return;
+      }
+
+      // Don't update if new progress is not greater
+      if (progressPercentage <= currentSavedProgress) {
         return;
       }
 
@@ -192,7 +220,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
       progressUpdateRef.current = setTimeout(() => {
         sendProgressUpdate(lessonId, progressPercentage);
-      }, 1000);
+      }, 2000); // 2 second debounce
     },
     [sendProgressUpdate, getCurrentLessonProgress]
   );
@@ -200,37 +228,45 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   // Handle video progress tracking
   const handleVideoProgress = useCallback(
     (data: { played: number; currentTime: number; duration: number }) => {
-      if (!selectedLesson) return;
+      if (!selectedLesson || !hasInitializedProgress.current) return;
 
-      // Check if lesson is already completed
-      const currentLessonProgress = getCurrentLessonProgress();
-      if (currentLessonProgress >= 100) {
+      const currentSavedProgress = getCurrentLessonProgress();
+
+      // Don't track if already at 100%
+      if (currentSavedProgress >= 100) {
         console.log("Lesson already at 100%, skipping progress tracking");
         return;
       }
 
       const progressPercentage = Math.floor(data.played * 100);
-      setCurrentProgress(progressPercentage);
 
-      // Only update if progress has changed by at least 5% or reached completion
+      // Ensure progress never goes backwards
+      const finalProgress = Math.max(
+        progressPercentage,
+        currentSavedProgress,
+        initialProgress
+      );
+      setCurrentProgress(finalProgress);
+
+      // Only update if progress has increased significantly
       const shouldUpdate =
-        progressPercentage >= 95 || // Near completion
-        (progressPercentage % 5 === 0 && // Every 5%
-          progressPercentage > lastProgressUpdate);
+        finalProgress >= 95 || // Near completion
+        finalProgress >= currentSavedProgress + 5; // Increased by at least 5%
 
-      if (shouldUpdate) {
-        setLastProgressUpdate(progressPercentage);
-        debouncedProgressUpdate(selectedLesson, progressPercentage);
+      if (shouldUpdate && finalProgress > lastProgressUpdate) {
+        setLastProgressUpdate(finalProgress);
+        debouncedProgressUpdate(selectedLesson, finalProgress);
 
         console.log("Video Progress Update:", {
           lessonId: selectedLesson,
-          progress: progressPercentage,
+          progress: finalProgress,
+          savedProgress: currentSavedProgress,
           currentTime: Math.floor(data.currentTime),
           duration: Math.floor(data.duration),
           timestamp: new Date().toISOString(),
         });
 
-        if (progressPercentage >= 95) {
+        if (finalProgress >= 95) {
           console.log("✅ Video completed! Lesson marked as done.");
         }
       }
@@ -238,6 +274,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     [
       selectedLesson,
       lastProgressUpdate,
+      initialProgress,
       debouncedProgressUpdate,
       getCurrentLessonProgress,
     ]
@@ -246,28 +283,44 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   // Handle video pause - save progress immediately
   const handleVideoPause = useCallback(
     (data: { played: number; currentTime: number; duration: number }) => {
-      if (!selectedLesson) return;
+      if (!selectedLesson || !hasInitializedProgress.current) return;
 
-      // Check if lesson is already completed
-      const currentLessonProgress = getCurrentLessonProgress();
-      if (currentLessonProgress >= 100) {
+      const currentSavedProgress = getCurrentLessonProgress();
+
+      // Don't save if already at 100%
+      if (currentSavedProgress >= 100) {
         console.log("Lesson already at 100%, skipping pause progress update");
         return;
       }
 
       const progressPercentage = Math.floor(data.played * 100);
-      setCurrentProgress(progressPercentage);
 
-      // Send progress immediately on pause
-      sendProgressUpdate(selectedLesson, progressPercentage);
+      // Ensure progress never goes backwards
+      const finalProgress = Math.max(
+        progressPercentage,
+        currentSavedProgress,
+        initialProgress
+      );
+      setCurrentProgress(finalProgress);
 
-      console.log("Video Paused - Progress Saved:", {
-        lessonId: selectedLesson,
-        progress: progressPercentage,
-        timestamp: new Date().toISOString(),
-      });
+      // Only send if progress has increased
+      if (finalProgress > currentSavedProgress) {
+        sendProgressUpdate(selectedLesson, finalProgress);
+
+        console.log("Video Paused - Progress Saved:", {
+          lessonId: selectedLesson,
+          progress: finalProgress,
+          previousProgress: currentSavedProgress,
+          timestamp: new Date().toISOString(),
+        });
+      }
     },
-    [selectedLesson, sendProgressUpdate, getCurrentLessonProgress]
+    [
+      selectedLesson,
+      initialProgress,
+      sendProgressUpdate,
+      getCurrentLessonProgress,
+    ]
   );
 
   // Check if URL is a YouTube link
@@ -419,11 +472,8 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   const currentLesson = getCurrentLesson();
 
   const handleBackNavigation = () => {
-    if (selectedLesson && currentProgress > 0) {
-      const currentLessonProgress = getCurrentLessonProgress();
-      if (currentLessonProgress < 100) {
-        sendProgressUpdate(selectedLesson, currentProgress);
-      }
+    if (selectedLesson && currentProgress > initialProgress) {
+      sendProgressUpdate(selectedLesson, currentProgress);
     }
     router.back();
   };
@@ -613,6 +663,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                 videoId={videoData.videoId}
                 onProgress={handleVideoProgress}
                 onPause={handleVideoPause}
+                initialProgress={initialProgress}
               />
             ) : videoData.url ? (
               <VideoPlayer
@@ -620,6 +671,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                 thumbnail={videoData.thumbnail}
                 onProgress={handleVideoProgress}
                 onPause={handleVideoPause}
+                initialProgress={initialProgress}
               />
             ) : (
               <div className="bg-white rounded-4xl shadow-md overflow-hidden">

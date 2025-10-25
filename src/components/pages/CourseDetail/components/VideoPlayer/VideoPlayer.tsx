@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 interface VideoPlayerProps {
   videoUrl: string;
   thumbnail?: string | null;
+  initialProgress?: number;
   onProgress?: (data: {
     played: number;
     currentTime: number;
@@ -21,6 +22,7 @@ interface VideoPlayerProps {
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   videoUrl,
   thumbnail,
+  initialProgress = 0,
   onProgress,
   onPause,
 }) => {
@@ -41,6 +43,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
+  const hasSetInitialProgress = useRef(false);
 
   // Format time display (seconds to mm:ss)
   const formatTime = (seconds: number) => {
@@ -50,31 +53,63 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const sendProgressData = React.useCallback(() => {
+  // Send progress data helper
+  const sendProgressData = () => {
     const video = videoRef.current;
     if (!video || !onProgress) return;
+
     onProgress({
       played: video.currentTime / video.duration,
       currentTime: video.currentTime,
       duration: video.duration,
     });
-  }, [onProgress]);
+  };
 
+  // Set initial progress when video metadata is loaded
   useEffect(() => {
-    if (playing) {
-      progressIntervalRef.current = setInterval(() => {
-        sendProgressData();
-      }, 10000);
-    } else if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+
+      // Set initial progress if provided and not already set
+      if (
+        initialProgress > 0 &&
+        !hasSetInitialProgress.current &&
+        video.duration > 0
+      ) {
+        const seekTime = (initialProgress / 100) * video.duration;
+        video.currentTime = seekTime;
+        setCurrentTime(seekTime);
+        setPlayed(initialProgress / 100);
+        hasSetInitialProgress.current = true;
+
+        console.log("Video Player: Seeked to initial progress", {
+          initialProgress,
+          seekTime,
+          duration: video.duration,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    };
+
+    video.addEventListener("loadedmetadata", handleLoadedMetadata);
+
+    // If metadata is already loaded
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
     }
 
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
-      }
+      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
-  }, [playing, sendProgressData]);
+  }, [initialProgress]);
+
+  // Reset hasSetInitialProgress when video URL changes
+  useEffect(() => {
+    hasSetInitialProgress.current = false;
+  }, [videoUrl]);
 
   // Close settings when clicking outside
   useEffect(() => {
@@ -101,10 +136,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleTimeUpdate = () => {
       setCurrentTime(video.currentTime);
       setPlayed(video.currentTime / video.duration);
-    };
-
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
     };
 
     const handleEnded = () => {
@@ -135,14 +166,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
     video.addEventListener("ended", handleEnded);
     video.addEventListener("play", handlePlay);
     video.addEventListener("pause", handlePause);
 
     return () => {
       video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
       video.removeEventListener("ended", handleEnded);
       video.removeEventListener("play", handlePlay);
       video.removeEventListener("pause", handlePause);
@@ -227,7 +256,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   const handleSeekMouseUp = () => {
     setSeeking(false);
-
     sendProgressData();
   };
 
@@ -342,6 +370,11 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
+              {initialProgress > 0 && (
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm">
+                  Resume from {initialProgress}%
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -595,8 +628,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                     </svg>
                   )}
                 </button>
-
-                {/* Settings Menu with Speed Control */}
               </div>
             </div>
           </div>
