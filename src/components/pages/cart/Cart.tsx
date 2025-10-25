@@ -128,8 +128,8 @@ export default function Cart() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-8">
-        <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
+        <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {cart.items.length > 0 ? (
             cart.items.map((course) => (
               <CourseCard
@@ -147,7 +147,7 @@ export default function Cart() {
           )}
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <div className="sticky top-6">
             <Card className="bg-amber-gold text-white rounded-2xl p-0 border-0 w-full">
               <CardContent className="p-6 text-center">

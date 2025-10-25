@@ -23,7 +23,7 @@ const initialState: DegreeYearsState = {
 };
 
 export const fetchDegreeYears = createAsyncThunk<
-  { data: Degree[]; message: string }, // Updated return type
+  { data: Degree[]; message: string },
   void,
   { rejectValue: ErrorResponse }
 >("degreeYears/fetchDegreeYears", async (_, { rejectWithValue }) => {
@@ -32,7 +32,7 @@ export const fetchDegreeYears = createAsyncThunk<
 
     if (response.status && response.data) {
       console.log("API Response Data:", response.data);
-      return { data: response.data, message: response.message }; // response.data is Degree[]
+      return { data: response.data, message: response.message };
     } else {
       return rejectWithValue({
         message: response.message || "Failed to fetch degree years data",
@@ -77,7 +77,7 @@ const degreeYearsSlice = createSlice({
       })
       .addCase(fetchDegreeYears.fulfilled, (state, action) => {
         state.loading = false;
-        state.degrees = action.payload.data || []; // Directly use data as Degree[]
+        state.degrees = action.payload.data || [];
         state.successMessage = action.payload.message;
         console.log("Degrees stored in state:", state.degrees);
       })
