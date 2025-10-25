@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { fetchDegreeYearsApi } from "@/services/degreeYearsApi";
-import { Degree } from "@/types"; // Import Degree type directly
+import { Degree } from "@/types";
 import { AxiosError } from "axios";
 
 interface DegreeYearsState {
