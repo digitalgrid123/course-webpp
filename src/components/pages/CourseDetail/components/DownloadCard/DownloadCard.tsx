@@ -17,15 +17,12 @@ export function DownloadCard({
   const handleDownload = () => {
     if (!downloadUrl) return;
 
-    // Check if it's an external link or file
     if (
       downloadUrl.startsWith("http://") ||
       downloadUrl.startsWith("https://")
     ) {
-      // For external URLs, open in new tab
       window.open(downloadUrl, "_blank", "noopener,noreferrer");
     } else {
-      // For internal files, trigger download
       const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = title;

@@ -51,16 +51,14 @@ export default function LoginPage() {
     formState: { errors, isValid, isSubmitting },
   } = form;
 
-  // Restore form data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem("loginFormData");
     if (savedData) {
       const parsedData: LoginFormValues = JSON.parse(savedData);
-      reset(parsedData); // Prefill form with saved data
+      reset(parsedData);
     }
   }, [reset]);
 
-  // Handle field errors from API
   useEffect(() => {
     if (fieldErrors) {
       Object.entries(fieldErrors).forEach(([field, messages]) => {
@@ -72,22 +70,19 @@ export default function LoginPage() {
     }
   }, [fieldErrors, setError]);
 
-  // Handle general error messages
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
 
-  // Handle success messages and clear form data
   useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
-      localStorage.removeItem("loginFormData"); // Clear saved data on success
+      localStorage.removeItem("loginFormData");
     }
   }, [successMessage]);
 
-  // Clear errors on unmount
   useEffect(() => {
     return () => {
       dispatch(clearAuthErrors());
@@ -96,7 +91,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     dispatch(clearAuthErrors());
-    // Save form data to localStorage
+
     localStorage.setItem("loginFormData", JSON.stringify(values));
     const resultAction = await dispatch(loginUser(values));
 

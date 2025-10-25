@@ -77,7 +77,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
   const onPlayerReady = useCallback(() => {
     setIsAPIReady(true);
 
-    // Set initial progress when player is ready
     const player = playerRef.current;
     if (player && initialProgress > 0 && !hasSetInitialProgress.current) {
       try {
@@ -112,17 +111,14 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
     progressIntervalRef.current = setInterval(() => {
       sendProgressData();
-    }, 10000); // Send progress every 10 seconds
+    }, 10000);
   }, [sendProgressData]);
 
   const onPlayerStateChange = useCallback(
     (event: YT.OnStateChangeEvent) => {
-      // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: buffering, 5: cued
       if (event.data === YT.PlayerState.PLAYING) {
-        // Playing
         startProgressTracking();
 
-        // Set initial progress on first play if not already set
         const player = playerRef.current;
         if (player && initialProgress > 0 && !hasSetInitialProgress.current) {
           try {
@@ -146,11 +142,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
           }
         }
       } else if (event.data === YT.PlayerState.PAUSED) {
-        // Paused
         stopProgressTracking();
         sendPauseData();
       } else if (event.data === YT.PlayerState.ENDED) {
-        // Ended
         stopProgressTracking();
         if (onProgress && playerRef.current) {
           const duration = playerRef.current.getDuration();
@@ -161,7 +155,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
           });
         }
       } else {
-        // Buffering or other states
         stopProgressTracking();
       }
     },
@@ -174,7 +167,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     ]
   );
 
-  // Handle visibility change - save progress when tab becomes hidden
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -189,14 +181,12 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
     };
   }, [sendPauseData]);
 
-  // Handle component unmount - save progress
   useEffect(() => {
     return () => {
       sendPauseData();
     };
   }, [sendPauseData]);
 
-  // Reset hasSetInitialProgress when videoId changes
   useEffect(() => {
     hasSetInitialProgress.current = false;
   }, [videoId]);

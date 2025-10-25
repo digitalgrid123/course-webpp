@@ -45,7 +45,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const settingsRef = useRef<HTMLDivElement>(null);
   const hasSetInitialProgress = useRef(false);
 
-  // Format time display (seconds to mm:ss)
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
@@ -53,7 +52,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Send progress data helper
   const sendProgressData = () => {
     const video = videoRef.current;
     if (!video || !onProgress) return;
@@ -65,7 +63,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     });
   };
 
-  // Set initial progress when video metadata is loaded
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -73,7 +70,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
 
-      // Set initial progress if provided and not already set
       if (
         initialProgress > 0 &&
         !hasSetInitialProgress.current &&
@@ -96,7 +92,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     video.addEventListener("loadedmetadata", handleLoadedMetadata);
 
-    // If metadata is already loaded
     if (video.readyState >= 1) {
       handleLoadedMetadata();
     }
@@ -106,12 +101,10 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [initialProgress]);
 
-  // Reset hasSetInitialProgress when video URL changes
   useEffect(() => {
     hasSetInitialProgress.current = false;
   }, [videoUrl]);
 
-  // Close settings when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -128,7 +121,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, []);
 
-  // Handle video events
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -155,7 +147,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
 
     const handlePause = () => {
-      // Send progress immediately when video is paused
       if (onPause) {
         onPause({
           played: video.currentTime / video.duration,
@@ -178,7 +169,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [onProgress, onPause]);
 
-  // Sync playing state with video
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -190,7 +180,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
   }, [playing]);
 
-  // Sync volume and mute
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -199,7 +188,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.muted = muted;
   }, [volume, muted]);
 
-  // Sync playback rate
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -207,7 +195,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     video.playbackRate = playbackRate;
   }, [playbackRate]);
 
-  // Handle visibility change - save progress when tab becomes hidden
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && videoRef.current && onPause) {
@@ -227,7 +214,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [onPause]);
 
-  // Handle component unmount - save progress when component unmounts
   useEffect(() => {
     return () => {
       if (videoRef.current && onPause) {
@@ -241,7 +227,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [onPause]);
 
-  // Handle seek
   const handleSeekChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPlayed = parseFloat(e.target.value);
     setPlayed(newPlayed);
@@ -277,7 +262,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     };
   }, [playing, onProgress]);
 
-  // Auto-hide controls
   const resetControlsTimeout = () => {
     if (controlsTimeoutRef.current) {
       clearTimeout(controlsTimeoutRef.current);

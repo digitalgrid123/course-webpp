@@ -46,7 +46,6 @@ const initialState: CourseState = {
   successMessage: null,
 };
 
-// Helper function to save progress to localStorage
 const saveProgressToLocalStorage = (
   courseId: number,
   lessonId: number,
@@ -63,7 +62,6 @@ const saveProgressToLocalStorage = (
   }
 };
 
-// Helper function to get progress from localStorage
 const getProgressFromLocalStorage = (
   courseId: number,
   lessonId: number
@@ -156,14 +154,13 @@ export const fetchCourseDetail = createAsyncThunk<
   try {
     const response = await getCourseDetailApi(request);
     if (response.status && response.data) {
-      // Sync localStorage with API data for all lessons
       response.data.modules.forEach((module) => {
         module.lessons.forEach((lesson) => {
           const localProgress = getProgressFromLocalStorage(
             response.data.id,
             lesson.id
           );
-          // Use the maximum of API progress and local progress
+
           const maxProgress = Math.max(
             lesson.watched_progress || 0,
             localProgress || 0
@@ -213,7 +210,6 @@ export const updateLessonProgress = createAsyncThunk<
     const { courseId, ...apiRequest } = request;
     const response = await updateLessonProgressApi(apiRequest);
     if (response.status) {
-      // Save to localStorage on successful API update
       saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
 
       return {
@@ -264,7 +260,7 @@ const courseSlice = createSlice({
     clearMyCourses: (state) => {
       state.myCourses = null;
     },
-    // Optimistically update local progress
+
     updateLocalProgress: (
       state,
       action: {
@@ -275,18 +271,14 @@ const courseSlice = createSlice({
 
       const { lessonId, progress, courseId } = action.payload;
 
-      // Save to localStorage immediately
       saveProgressToLocalStorage(courseId, lessonId, progress);
 
-      // Find and update the lesson progress
       for (const courseModule of state.courseDetail.modules) {
         const lesson = courseModule.lessons.find((l) => l.id === lessonId);
         if (lesson) {
-          // Only update if new progress is greater than current
           if (progress > (lesson.watched_progress || 0)) {
             lesson.watched_progress = progress;
 
-            // Recalculate module progress
             const totalLessons = courseModule.lessons.length;
             const totalProgress = courseModule.lessons.reduce(
               (sum, l) => sum + (l.watched_progress || 0),
@@ -295,7 +287,6 @@ const courseSlice = createSlice({
             courseModule.module_watched_percentage =
               totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
 
-            // Recalculate course progress
             const allLessons = state.courseDetail.modules.flatMap(
               (m) => m.lessons
             );
@@ -317,7 +308,7 @@ const courseSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Dashboard Home
+
       .addCase(fetchDashboardHome.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -335,7 +326,7 @@ const courseSlice = createSlice({
           action.payload?.message || "Failed to fetch dashboard data";
         state.fieldErrors = action.payload?.errors || null;
       })
-      // Fetch My Courses
+
       .addCase(fetchMyCourses.pending, (state) => {
         state.myCoursesLoading = true;
         state.error = null;
@@ -350,7 +341,7 @@ const courseSlice = createSlice({
         state.error = action.payload?.message || "Failed to fetch my courses";
         state.fieldErrors = action.payload?.errors || null;
       })
-      // Fetch Course Detail
+
       .addCase(fetchCourseDetail.pending, (state) => {
         state.detailLoading = true;
         state.error = null;
@@ -368,7 +359,7 @@ const courseSlice = createSlice({
           action.payload?.message || "Failed to fetch course details";
         state.fieldErrors = action.payload?.errors || null;
       })
-      // Update Lesson Progress
+
       .addCase(updateLessonProgress.pending, (state) => {
         state.progressLoading = true;
       })
@@ -376,18 +367,15 @@ const courseSlice = createSlice({
         state.progressLoading = false;
         console.log("Progress updated:", action.payload.message);
 
-        // Update the lesson progress in the state
         if (state.courseDetail) {
           const { lessonId, progress } = action.payload;
 
           for (const courseModule of state.courseDetail.modules) {
             const lesson = courseModule.lessons.find((l) => l.id === lessonId);
             if (lesson) {
-              // Only update if new progress is greater
               if (progress > (lesson.watched_progress || 0)) {
                 lesson.watched_progress = progress;
 
-                // Recalculate module progress
                 const totalLessons = courseModule.lessons.length;
                 const totalProgress = courseModule.lessons.reduce(
                   (sum, l) => sum + (l.watched_progress || 0),
@@ -398,7 +386,6 @@ const courseSlice = createSlice({
                     ? Math.round(totalProgress / totalLessons)
                     : 0;
 
-                // Recalculate course progress
                 const allLessons = state.courseDetail.modules.flatMap(
                   (m) => m.lessons
                 );

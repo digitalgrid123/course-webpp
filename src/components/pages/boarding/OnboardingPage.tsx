@@ -69,7 +69,6 @@ export default function OnboardingPage() {
     if (step === 1) {
       setStep(2);
     } else {
-      // Submit onboarding data
       const payload = {
         degree_id: [parseInt(selectedDegreeId)],
         year_id: [parseInt(selectedYearId)],

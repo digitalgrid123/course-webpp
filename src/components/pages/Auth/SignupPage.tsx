@@ -70,16 +70,14 @@ export default function SignupPage() {
     formState: { errors, isValid, isSubmitting },
   } = form;
 
-  // Restore form data from localStorage on mount
   useEffect(() => {
     const savedData = localStorage.getItem("signupFormData");
     if (savedData) {
       const parsedData: SignupFormValues = JSON.parse(savedData);
-      reset(parsedData); // Prefill form with saved data
+      reset(parsedData);
     }
   }, [reset]);
 
-  // Handle field errors from API
   useEffect(() => {
     if (fieldErrors) {
       Object.entries(fieldErrors).forEach(([field, messages]) => {
@@ -91,14 +89,12 @@ export default function SignupPage() {
     }
   }, [fieldErrors, setError]);
 
-  // Handle general error messages
   useEffect(() => {
     if (error) {
       toast.error(error);
     }
   }, [error]);
 
-  // Clear errors on unmount
   useEffect(() => {
     return () => {
       dispatch(clearAuthErrors());
@@ -107,7 +103,7 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     dispatch(clearAuthErrors());
-    // Save form data to localStorage
+
     localStorage.setItem("signupFormData", JSON.stringify(values));
     const resultAction = await dispatch(registerUser(values));
 
