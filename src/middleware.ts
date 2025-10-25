@@ -1,11 +1,25 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default createMiddleware(routing);
+const intlMiddleware = createMiddleware(routing);
+
+export default function middleware(req: NextRequest) {
+  const res = intlMiddleware(req);
+
+  const isLogged = req.cookies.get("isLogged")?.value === "true";
+  const { pathname } = req.nextUrl;
+
+  const publicRoutes = ["/", "/login", "/register", "/onboarding", "/verify"];
+
+  if (isLogged && publicRoutes.includes(pathname)) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+
+  return res;
+}
 
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
   matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
 };

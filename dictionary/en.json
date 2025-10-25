@@ -1,44 +1,184 @@
 {
   "Index": {
-    "boilerplateName": "Next.js i18n Template",
-    "title": "Next 15 Template with i18n and Shadcn UI",
-    "description": "A powerful starting point for your next multilingual, accessible web application.",
-    "cloneRepository": "Clone Repository",
-    "leaveStar": "Leave a Star",
-    "howToUse": "How to Use",
-    "gettingStarted": "Getting Started",
-    "installation": "Installation",
-    "howToContribute": "How to Contribute",
-    "omitrtlUsage": "OmitRTL Usage",
-    "OmitRTLInstruction": "To use OmitRTL, simply wrap the component you want to omit RTL support for with the OmitRTL component.",
-    "contribute": "Contribute",
-    "installationSteps": {
-      "cloneRepository": "Clone the repository:",
-      "installDependencies": "Install dependencies:",
-      "startDevServer": "Start the development server:"
-    },
-    "contributeSteps": {
-      "fork": "Fork the repository",
-      "createBranch": "Create a new branch:",
-      "commit": "Commit your changes:",
-      "push": "Push to the branch:",
-      "pullRequest": "Create a new Pull Request"
-    },
+    "appName": "Courses App",
+    "title": "Multilingual Courses App",
+    "description": "A powerful platform for managing and presenting multilingual courses in an accessible and modern way.",
     "error": {
-      "server": "Internal Server Error",
-      "sorry": "Sorry, we encountered an unexpected issue on our server.",
-      "tryAgain": " Try again later.",
-      "returnHome": "Return home"
+      "server": "Internal server error",
+      "sorry": "Sorry, we encountered an unexpected server issue.",
+      "tryAgain": "Please try again later.",
+      "returnHome": "Return to home page"
+    }
+  },
+  "Sidebar": {
+    "courses": "Courses",
+    "myCourses": "My Courses",
+    "cart": "Cart",
+    "settings": "Settings",
+    "logout": "Logout",
+    "confirmLogout": "Confirm Logout",
+    "areYouSureLogout": "Are you sure you want to logout?",
+    "cancel": "Cancel"
+  },
+  "Courses": {
+    "ourCourses": "Our Courses",
+    "searchCourses": "Search courses",
+    "allCourses": "All Courses",
+    "metadata": {
+      "title": "Courses Dashboard - Learn and Grow",
+      "description": "Explore and manage your courses in the dashboard. Access your learning materials and track your progress.",
+      "keywords": "courses, dashboard, learning, education, online courses, e-learning"
+    }
+  },
+
+  "MyCourses": {
+    "myCourses": "My Courses",
+    "loading": "Loading courses...",
+    "error": "Error loading courses. Please try again.",
+    "retry": "Try Again",
+    "noCourses": "No courses found",
+    "noCoursesDescription": "You haven't enrolled in any courses yet. Start exploring and enroll in a course to begin your learning journey.",
+    "unknownInstructor": "Unknown Instructor",
+    "totalCourses": "{count} {count, plural, one {course} other {courses}}",
+    "metadata": {
+      "title": "My Learning Journey - Track Progress and Keep Growing",
+      "description": "View and manage all the courses you’ve enrolled in on Vovo. Track your learning progress, continue where you left off, and discover new opportunities to expand your knowledge and skills.",
+      "keywords": "my courses, learning dashboard, enrolled courses, track progress, student portal, online education, Vovo learning, lifelong learning, course management, personal development, skill tracking"
+    }
+  },
+
+  "MyCart": {
+    "myCart": "My Cart",
+    "noCoursesInCart": "No courses in your cart",
+    "purchaseSuccess": "Purchase completed successfully! Added courses: {courses}",
+    "someCoursesSkipped": "Some courses were not processed: {courses}",
+    "purchaseFailed": "Failed to complete purchase",
+    "purchaseError": "An error occurred during purchase",
+    "metadata": {
+      "title": "My Cart - Review Your Courses & Complete Enrollment",
+      "description": "Review and manage your selected courses on Vovo. Update quantities, apply discounts, and seamlessly proceed to checkout to start your learning journey today.",
+      "keywords": "shopping cart, course cart, checkout, enroll courses, online learning cart, Vovo cart, education platform, course enrollment, payment, learning investment, course selection, cart management"
+    }
+  },
+
+  "Login": {
+    "title": "Login",
+    "subtitle": "Sign in to your account",
+    "emailLabel": "Email",
+    "emailPlaceholder": "example@gmail.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "noAccountPrefix": "New user?",
+    "noAccountAction": "Click to create an account",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email",
+    "passwordRequired": "Password must be at least 6 characters",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "metadata": {
+      "title": "Login - Courses App",
+      "description": "Access your account to manage and track your courses.",
+      "keywords": "login, authentication, courses, user account"
+    }
+  },
+
+  "Signup": {
+    "title": "Create Account",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastNameLabel": "Last Name",
+    "lastNamePlaceholder": "Enter your last name",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "example@gmail.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Enter password again",
+    "profileImageLabel": "Profile Image URL",
+    "profileImagePlaceholder": "Paste image URL or upload file",
+    "signUp": "Sign Up",
+    "alreadyHaveAccountPrefix": "Already have an account?",
+    "alreadyHaveAccountAction": "Click to login",
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Invalid email address",
+    "passwordRequired": "Password is required",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "confirmPasswordRequired": "Password confirmation is required",
+    "passwordsMustMatch": "Passwords must match",
+    "profileImageRequired": "Profile image is required",
+    "profileImageInvalid": "Please enter a valid image URL",
+    "metadata": {
+      "title": "Sign Up - Courses App",
+      "description": "Create a new account to access all features of Courses App.",
+      "keywords": "signup, register, create account, courses app"
+    }
+  },
+
+  "Verify": {
+    "title": "Account Verification",
+    "subtitle": "Enter the verification code sent to your email",
+    "metadata": {
+      "title": "Account Verification - Courses Platform",
+      "description": "Verify your account by entering the 6-digit verification code sent to your email upon registration.",
+      "keywords": "verification, code, account, registration, courses platform"
+    },
+    "verificationCodeLabel": "Verification Code",
+    "verificationCodePlaceholder": "Enter 4-digit code",
+    "didNotReceive": "Didn't receive a code?",
+    "resendCode": "Resend code",
+    "backToLogin": "Back to login",
+    "backToRegister": "Back to Register",
+    "codeRequired": "Verification code is required",
+    "codeLengthError": "Verification code must be 4 digits",
+    "verify": "Verify",
+    "successMessage": "Your account has been verified successfully",
+    "errorMessage": "Incorrect verification code, please try again"
+  },
+
+  "Onboarding": {
+    "loading": "loading...",
+    "select_degree": "Select your degree",
+    "select_year": "Which year are you studying?",
+    "continue": "Continue",
+    "finish_continue": "Finish and continue to system",
+    "degrees": {
+      "chemistry": "Chemistry",
+      "computer_science": "Computer Science",
+      "physics": "Physics",
+      "math": "Mathematics",
+      "literature": "Hebrew Literature",
+      "history": "History",
+      "biology": "Biology",
+      "geography": "Geography",
+      "art": "Art",
+      "music": "Music"
+    },
+    "years": {
+      "year1": "Year 1",
+      "year2": "Year 2",
+      "year3": "Year 3",
+      "masters": "Master's"
+    },
+    "metadata": {
+      "title": "Welcome to Courses App - Onboarding",
+      "description": "Get started with Courses App by completing your onboarding process. Select your degree and year to personalize your experience.",
+      "keywords": "onboarding, courses, user setup, education, platform"
     }
   },
 
   "Footer": {
-    "copyright": "© 2025 Next.js i18n Template. Open source under MIT license.",
+    "copyright": "© 2025 Courses App. Open source under MIT license.",
     "githubLink": "GitHub"
   },
+
   "Metadata": {
-    "title": "Next.js i18n Template - Multilingual Starter Template",
-    "description": "Next.js internationalization (i18n) starter kit with Arabic, Chinese, English, Spanish, and Japanese support. Includes shadcn UI, theme switching, and RTL support.",
-    "keywords": "Next.js, i18n, internationalization, Arabic, Chinese, Spanish, Japanese, multilingual, template, starter template, shadcn UI, RTL support"
+    "title": "Multilingual Courses App - Startup Platform",
+    "description": "Courses platform with support for Hebrew, Arabic, Chinese, English, Spanish, and Japanese. Includes RTL support and theme switching.",
+    "keywords": "courses, platform, multilingual, Hebrew, Arabic, Chinese, Spanish, Japanese, RTL support"
   }
 }

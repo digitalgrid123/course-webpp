@@ -1,0 +1,184 @@
+{
+  "Index": {
+    "appName": "אפליקציית קורסים",
+    "title": "אפליקציית קורסים רב-לשונית",
+    "description": "פלטפורמת התחלה חזקה לניהול והצגת קורסים רב-לשוניים בצורה נגישה ומודרנית.",
+    "error": {
+      "server": "שגיאת שרת פנימית",
+      "sorry": "מצטערים, נתקלנו בבעיה בלתי צפויה בשרת שלנו.",
+      "tryAgain": "נסה שוב מאוחר יותר.",
+      "returnHome": "חזור לדף הראשי"
+    }
+  },
+  "Sidebar": {
+    "courses": "קורסים",
+    "myCourses": "הקורסים שלי",
+    "cart": "סל הקניות",
+    "settings": "הגדרות",
+    "logout": "התנתק",
+    "confirmLogout": "אישור התנתקות",
+    "areYouSureLogout": "האם אתה בטוח שברצונך להתנתק?",
+    "cancel": "ביטול"
+  },
+  "Courses": {
+    "ourCourses": "הקורסים שלנו",
+    "searchCourses": "חיפוש קורסים",
+    "allCourses": "כל הקורסים",
+    "metadata": {
+      "title": "לוח בקרה של קורסים - למד וצמח",
+      "description": "חקור ונהל את הקורסים שלך בלוח הבקרה. גש לחומרי הלמידה שלך ועקוב אחר ההתקדמות שלך.",
+      "keywords": "קורסים, לוח בקרה, למידה, חינוך, קורסים מקוונים, למידה מקוונת"
+    }
+  },
+  "MyCourses": {
+    "myCourses": "הקורסים שלי",
+    "loading": "טוען קורסים...",
+    "error": "שגיאה בטעינת הקורסים. אנא נסה שוב.",
+    "retry": "נסה שוב",
+    "noCourses": "לא נמצאו קורסים",
+    "noCoursesDescription": "עדיין לא נרשמת לאף קורס. התחל לחקור והירשם לקורסים כדי להתחיל את מסע הלמידה שלך.",
+    "unknownInstructor": "מדריך לא ידוע",
+    "totalCourses": "{count} {count, plural, one {קורס} other {קורסים}}",
+    "metadata": {
+      "title": "מסע הלמידה שלי - עקוב אחר ההתקדמות והמשך לצמוח",
+      "description": "צפה ונהל את כל הקורסים שנרשמת אליהם ב-Vovo. עקוב אחר התקדמות הלמידה שלך, המשך מהמקום שבו הפסקת, וגלה הזדמנויות חדשות להרחיב את הידע והמיומנויות שלך.",
+      "keywords": "הקורסים שלי, לוח בקרת למידה, קורסים רשומים, מעקב אחר התקדמות, פורטל סטודנטים, חינוך מקוון, למידה Vovo, המשך למידה, ניהול קורסים, פיתוח אישי, מעקב מיומנויות"
+    }
+  },
+  "MyCart": {
+    "myCart": "העגלה שלי",
+    "noCoursesInCart": "אין קורסים בעגלה שלך",
+    "purchaseSuccess": "הרכישה הושלמה בהצלחה! קורסים שנוספו: {courses}",
+    "someCoursesSkipped": "חלק מהקורסים לא עובדו: {courses}",
+    "purchaseFailed": "הרכישה נכשלה",
+    "purchaseError": "אירעה שגיאה במהלך הרכישה",
+    "metadata": {
+      "title": "העגלה שלי - סקור את הקורסים שלך והשלם את ההרשמה",
+      "description": "סקור ונהל את הקורסים שבחרת ב-Vovo. עדכן כמויות, החל הנחות והמשך לתשלום בצורה חלקה כדי להתחיל את מסע הלמידה שלך היום.",
+      "keywords": "עגלת קניות, עגלת קורסים, תשלום, הרשמה לקורסים, עגלת למידה מקוונת, עגלת Vovo, פלטפורמת חינוך, הרשמה לקורסים, תשלום, השקעה בלמידה, בחירת קורסים, ניהול עגלה"
+    }
+  },
+
+  "Login": {
+    "title": "התחברות",
+    "subtitle": "התחברות לחשבונך",
+    "emailLabel": "מייל",
+    "emailPlaceholder": "example@gmail.com",
+    "passwordLabel": "סיסמא",
+    "passwordPlaceholder": "הכנס סיסמה",
+    "rememberMe": "זכור אותי",
+    "forgotPassword": "שכחת סיסמה?",
+    "signIn": "התחברות",
+    "signUp": "הירשם",
+    "noAccountPrefix": "משתמש חדש?",
+    "noAccountAction": "לחץ לפתיחת חשבון",
+    "emailRequired": "אימייל הוא שדה חובה",
+    "emailInvalid": "אימייל לא תקין",
+    "passwordRequired": "הסיסמה חייבת להיות לפחות 6 תווים",
+    "passwordMinLength": "הסיסמה חייבת להיות לפחות 6 תווים",
+    "metadata": {
+      "title": "כניסה - אפליקציית קורסים",
+      "description": "גש לחשבונך כדי לנהל ולעקוב אחרי הקורסים שלך.",
+      "keywords": "כניסה, אימות, קורסים, חשבון משתמש"
+    }
+  },
+
+  "Signup": {
+    "title": "צור חשבון",
+    "firstNameLabel": "שם פרטי",
+    "firstNamePlaceholder": "הזן את שמך הפרטי",
+    "lastNameLabel": "שם משפחה",
+    "lastNamePlaceholder": "הזן את שם המשפחה שלך",
+    "emailLabel": "כתובת אימייל",
+    "emailPlaceholder": "example@gmail.com",
+    "passwordLabel": "סיסמה",
+    "passwordPlaceholder": "הזן את הסיסמה שלך",
+    "confirmPasswordLabel": "אישור סיסמה",
+    "confirmPasswordPlaceholder": "הזן שוב את הסיסמה שלך",
+    "profileImageLabel": "כתובת תמונת פרופיל",
+    "profileImagePlaceholder": "הדבק כתובת תמונה או העלה קובץ",
+    "signUp": "הרשמה",
+    "alreadyHaveAccountPrefix": "כבר יש לך חשבון?",
+    "alreadyHaveAccountAction": "לחץ כדי להתחבר",
+    "firstNameRequired": "שם פרטי הוא שדה חובה",
+    "lastNameRequired": "שם משפחה הוא שדה חובה",
+    "emailRequired": "האימייל הוא שדה חובה",
+    "emailInvalid": "כתובת האימייל אינה תקינה",
+    "passwordRequired": "הסיסמה היא שדה חובה",
+    "passwordMinLength": "הסיסמה חייבת להכיל לפחות 6 תווים",
+    "confirmPasswordRequired": "יש לאשר את הסיסמה",
+    "passwordsMustMatch": "הסיסמאות חייבות להיות זהות",
+    "profileImageRequired": "נדרש להזין תמונת פרופיל",
+    "profileImageInvalid": "אנא הזן כתובת תמונה תקפה",
+
+    "metadata": {
+      "title": "הרשמה - אפליקציית קורסים",
+      "description": "צור חשבון חדש כדי לגשת לכל הפיצ'רים של אפליקציית הקורסים.",
+      "keywords": "הרשמה, רישום, יצירת חשבון, אפליקציית קורסים"
+    }
+  },
+
+  "Verify": {
+    "title": "אימות חשבון",
+    "subtitle": "הזן את קוד האימות שנשלח למייל שלך",
+    "verificationCodeLabel": "קוד אימות",
+    "verificationCodePlaceholder": "הזן קוד בן 4 ספרות",
+    "didNotReceive": "לא קיבלת קוד?",
+    "resendCode": "שלח קוד מחדש",
+    "backToLogin": "חזרה להתחברות",
+    "backToRegister": "חזרה להרשמה",
+    "codeRequired": "קוד האימות נדרש",
+    "codeLengthError": "קוד האימות חייב להיות בן 4 ספרות",
+    "verify": "אמת",
+    "successMessage": "החשבון שלך אומת בהצלחה",
+    "errorMessage": "קוד האימות שגוי, נא לנסות שוב",
+    "metadata": {
+      "title": "אימות חשבון - פלטפורמת קורסים",
+      "description": "אמת את החשבון שלך על ידי הזנת קוד האימות בן 6 הספרות שנשלח למייל שלך בעת ההרשמה.",
+      "keywords": "אימות, קוד, חשבון, הרשמה, פלטפורמת קורסים"
+    }
+  },
+
+  "Onboarding": {
+    "loading": "טוען...",
+    "select_degree": "בחר את התואר שלך",
+    "select_year": "באיזו שנה אתה לומד?",
+    "continue": "המשך",
+    "finish_continue": "סיום והמשך למערכת",
+
+    "degrees": {
+      "chemistry": "כימיה",
+      "computer_science": "מדעי המחשב",
+      "physics": "פיזיקה",
+      "math": "מתמטיקה",
+      "literature": "ספרות עברית",
+      "history": "היסטוריה",
+      "biology": "ביולוגיה",
+      "geography": "גיאוגרפיה",
+      "art": "אמנות",
+      "music": "מוזיקה"
+    },
+    "years": {
+      "year1": "שנה א'",
+      "year2": "שנה ב'",
+      "year3": "שנה ג'",
+      "masters": "מגיסטר"
+    },
+    "metadata": {
+      "title": "ברוכים הבאים ל-Courses App - התהליך הראשוני",
+      "description": "התחל עם Courses App על ידי השלמת תהליך ההיכרות. בחר את התואר והשנה שלך כדי להתאים את החוויה שלך.",
+      "keywords": "התהליך הראשוני, קורסים, הגדרת משתמש, חינוך, פלטפורמה"
+    }
+  },
+
+  "Footer": {
+    "copyright": "© 2025 אפליקציית קורסים. קוד פתוח תחת רישיון MIT.",
+    "githubLink": "GitHub"
+  },
+
+  "Metadata": {
+    "title": "אפליקציית קורסים רב-לשונית - פלטפורמת התחלה",
+    "description": "פלטפורמת קורסים עם תמיכה בעברית, ערבית, סינית, אנגלית, ספרדית ויפנית. כוללת תמיכת RTL והחלפת ערכות נושא.",
+    "keywords": "קורסים, פלטפורמה, רב-לשוני, עברית, ערבית, סינית, ספרדית, יפנית, תמיכת RTL"
+  }
+}

@@ -1,6 +1,6 @@
 import { use } from "react";
 import { setRequestLocale } from "next-intl/server";
-import HomeIndex from "@/components/pages/HomeIndex";
+import LoginPage from "@/components/pages/Auth/LoginPage";
 
 export default function HomePage({
   params,
@@ -11,5 +11,5 @@ export default function HomePage({
   // Enable static rendering
   setRequestLocale(locale);
 
-  return <HomeIndex />;
+  return <LoginPage />;
 }
