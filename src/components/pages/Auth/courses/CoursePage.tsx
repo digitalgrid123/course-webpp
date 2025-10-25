@@ -133,7 +133,7 @@ export default function CoursesPage() {
               id={course.id}
               title={course.name}
               instructor={course.teacher.name}
-              level={`${course.course_point} points`}
+              level={`${course.course_point} נק״ז`}
               image={course.image}
             />
           ))}
