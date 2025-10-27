@@ -55,20 +55,24 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     return 0;
   }, [courseDetail, selectedLesson]);
 
+  const isLessonAccessible = useCallback(
+    (moduleIndex: number, lessonIndex: number) => {
+      if (courseDetail?.is_my_course === 1) {
+        return true; // All lessons accessible if user owns the course
+      }
+      // Only first lesson of first module is accessible
+      return moduleIndex === 0 && lessonIndex === 0;
+    },
+    [courseDetail]
+  );
+
   useEffect(() => {
     if (selectedLesson && courseDetail) {
-      // Reset the initialization flag
       hasInitializedProgress.current = false;
-
-      // Get the saved progress for the current lesson
       const savedProgress = getCurrentLessonProgress();
-
-      // Set all progress states to the saved value
       setInitialProgress(savedProgress);
       setCurrentProgress(savedProgress);
       setLastProgressUpdate(savedProgress);
-
-      // Mark as initialized
       hasInitializedProgress.current = true;
 
       console.log("Initialized lesson progress:", {
@@ -180,19 +184,34 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   }, [courseDetail, selectedLesson]);
 
   const handleModuleClick = (moduleId: number) => {
+    const moduleIndex =
+      courseDetail?.modules.findIndex((m) => m.id === moduleId) || 0;
+
+    // If course is not owned and trying to access modules beyond first
+    if (courseDetail?.is_my_course === 0 && moduleIndex > 0) {
+      toast.error("יש לרכוש את הקורס כדי לגשת למודולים נוספים");
+      return;
+    }
+
     setSelectedModule(selectedModule === moduleId ? null : moduleId);
   };
+  const handleLessonClick = (
+    lessonId: number,
+    moduleIndex: number,
+    lessonIndex: number
+  ) => {
+    // Check if lesson is accessible
+    if (!isLessonAccessible(moduleIndex, lessonIndex)) {
+      toast.error("יש לרכוש את הקורס כדי לגשת לשיעור זה");
+      return;
+    }
 
-  const handleLessonClick = (lessonId: number) => {
     if (selectedLesson && currentProgress > initialProgress) {
-      // Save progress for the previous lesson before switching
       sendProgressUpdate(selectedLesson, currentProgress);
     }
 
-    // Update selected lesson
     setSelectedLesson(lessonId);
 
-    // Reset progress states to the new lesson's saved progress
     const savedProgress =
       courseDetail?.modules
         ?.flatMap((m) => m.lessons)
@@ -201,7 +220,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     setInitialProgress(savedProgress);
     setLastProgressUpdate(savedProgress);
 
-    // Reset initialization flag to trigger useEffect
     hasInitializedProgress.current = false;
 
     console.log("Switching to lesson:", {
@@ -556,97 +574,192 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
               </div>
 
               <div className="bg-linear-(--gradient-amber) rounded-2xl p-8 text-white">
-                <h2 className="text-center font-bold text-base mb-6">
+                <h2 className="text-center font-bold text-base mb-3">
                   {courseDetail.modules_count} מודולים
                 </h2>
 
-                <div className="space-y-1 mb-6">
-                  {courseDetail.modules.map((courseModule) => (
-                    <div key={courseModule.id}>
-                      <div
-                        onClick={() => handleModuleClick(courseModule.id)}
-                        className={`flex items-center justify-between p-4 rounded-lg transition-all cursor-pointer ${
-                          selectedModule === courseModule.id
-                            ? "bg-amber-gold"
-                            : "hover:bg-amber-gold"
-                        }`}
-                      >
-                        <div className="w-8 h-8 bg-soft-gray shadow-soft-dark rounded-lg flex items-center justify-center text-charcoal-blue font-bold text-sm flex-shrink-0">
-                          {courseModule.sorting_order}
-                        </div>
-                        <span className="text-white font-medium text-sm flex-1 text-right mr-4">
-                          {courseModule.name}
-                        </span>
-                      </div>
+                {/* Total Progress Indicator */}
+                <div className="mb-6 bg-white/10 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold">התקדמות כוללת</span>
+                    <span className="text-lg font-bold">
+                      {Math.round(
+                        courseDetail.modules.reduce((total, module) => {
+                          const moduleProgress = module.lessons.reduce(
+                            (sum, lesson) =>
+                              sum + (lesson.watched_progress || 0),
+                            0
+                          );
+                          return total + moduleProgress;
+                        }, 0) /
+                          courseDetail.modules.reduce(
+                            (total, module) => total + module.lessons.length,
+                            0
+                          )
+                      )}
+                      %
+                    </span>
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-white h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.round(
+                          courseDetail.modules.reduce((total, module) => {
+                            const moduleProgress = module.lessons.reduce(
+                              (sum, lesson) =>
+                                sum + (lesson.watched_progress || 0),
+                              0
+                            );
+                            return total + moduleProgress;
+                          }, 0) /
+                            courseDetail.modules.reduce(
+                              (total, module) => total + module.lessons.length,
+                              0
+                            )
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
 
-                      <div
-                        className={`transition-all duration-500 ease-in-out overflow-hidden ${
-                          selectedModule === courseModule.id
-                            ? "max-h-[1000px] opacity-100 translate-y-0"
-                            : "max-h-0 opacity-0 -translate-y-2"
-                        }`}
-                      >
-                        <div className="bg-amber-gold p-4 rounded-lg mt-2 text-sm text-white/95">
-                          <p className="font-semibold mb-3 text-right">
-                            שיעורים:
-                          </p>
-                          <div className="space-y-2">
-                            {courseModule.lessons.map((lesson) => (
-                              <div
-                                key={lesson.id}
-                                onClick={() => handleLessonClick(lesson.id)}
-                                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-                                  selectedLesson === lesson.id
-                                    ? "bg-white/20 ring-2 ring-white/50"
-                                    : "hover:bg-white/10"
-                                }`}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs bg-white text-charcoal-blue px-2 py-1 rounded font-semibold">
-                                    {lesson.type === 1 ? "סרטון" : "קישור"}
-                                  </span>
-                                  {lesson.materials &&
-                                    lesson.materials.length > 0 && (
-                                      <span className="text-xs bg-white/30 text-white px-2 py-1 rounded font-semibold">
-                                        {lesson.materials.length} חומרים
-                                      </span>
-                                    )}
-                                  {lesson.watched_progress >= 100 && (
-                                    <span className="text-xs bg-green-500 text-white px-2 py-1 rounded font-semibold flex items-center gap-1">
-                                      <svg
-                                        className="w-3 h-3"
-                                        fill="currentColor"
-                                        viewBox="0 0 20 20"
-                                      >
-                                        <path
-                                          fillRule="evenodd"
-                                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                          clipRule="evenodd"
-                                        />
-                                      </svg>
-                                      הושלם
-                                    </span>
-                                  )}
-                                  {lesson.watched_progress > 0 &&
-                                    lesson.watched_progress < 100 && (
-                                      <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded font-semibold">
-                                        {lesson.watched_progress}%
-                                      </span>
-                                    )}
-                                </div>
-                                <span className="text-right flex-1 mr-3">
-                                  {lesson.name}
-                                </span>
-                              </div>
-                            ))}
+                <div className="space-y-1 mb-6">
+                  {courseDetail.modules.map((courseModule, moduleIndex) => {
+                    const isModuleAccessible =
+                      courseDetail.is_my_course === 1 || moduleIndex === 0;
+
+                    return (
+                      <div key={courseModule.id}>
+                        <div
+                          onClick={() => handleModuleClick(courseModule.id)}
+                          className={`flex items-center justify-between p-4 rounded-lg transition-all ${
+                            !isModuleAccessible
+                              ? "opacity-50 cursor-not-allowed bg-white/5"
+                              : selectedModule === courseModule.id
+                              ? "bg-amber-gold cursor-pointer"
+                              : "hover:bg-amber-gold cursor-pointer"
+                          }`}
+                        >
+                          <div className="w-8 h-8 bg-soft-gray shadow-soft-dark rounded-lg flex items-center justify-center text-charcoal-blue font-bold text-sm flex-shrink-0">
+                            {courseModule.sorting_order}
                           </div>
-                          <p className="mt-3 text-xs text-white/70 text-right">
-                            לחץ שוב כדי להסתיר
-                          </p>
+                          <span className="text-white font-medium text-sm flex-1 text-right mr-4 flex items-center gap-2">
+                            {courseModule.name}
+                            {!isModuleAccessible && (
+                              <svg
+                                className="w-4 h-4"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            )}
+                          </span>
+                        </div>
+
+                        <div
+                          className={`transition-all duration-500 ease-in-out overflow-hidden ${
+                            selectedModule === courseModule.id
+                              ? "max-h-[1000px] opacity-100 translate-y-0"
+                              : "max-h-0 opacity-0 -translate-y-2"
+                          }`}
+                        >
+                          <div className="bg-amber-gold p-4 rounded-lg mt-2 text-sm text-white/95">
+                            <p className="font-semibold mb-3 text-right">
+                              שיעורים:
+                            </p>
+                            <div className="space-y-2 relative">
+                              <div className="absolute right-3.5 top-0 bottom-0 w-0.5 bg-white/30"></div>
+                              <div
+                                className="absolute right-3.5 top-0 w-0.5 bg-green-400 transition-all duration-500"
+                                style={{
+                                  height: `${
+                                    (courseModule.lessons.filter(
+                                      (l) => l.watched_progress >= 100
+                                    ).length /
+                                      courseModule.lessons.length) *
+                                    100
+                                  }%`,
+                                }}
+                              ></div>
+
+                              {courseModule.lessons.map(
+                                (lesson, lessonIndex) => {
+                                  const moduleIndex =
+                                    courseDetail.modules.findIndex(
+                                      (m) => m.id === courseModule.id
+                                    );
+                                  const isAccessible = isLessonAccessible(
+                                    moduleIndex,
+                                    lessonIndex
+                                  );
+
+                                  return (
+                                    <div
+                                      key={lesson.id}
+                                      onClick={() =>
+                                        isAccessible &&
+                                        handleLessonClick(
+                                          lesson.id,
+                                          moduleIndex,
+                                          lessonIndex
+                                        )
+                                      }
+                                      className={`flex items-center justify-between p-3 rounded-lg transition-all relative ${
+                                        !isAccessible
+                                          ? "opacity-50 cursor-not-allowed bg-white/5"
+                                          : selectedLesson === lesson.id
+                                          ? "bg-white/20 ring-2 ring-white/50 cursor-pointer"
+                                          : "hover:bg-white/10 cursor-pointer"
+                                      }`}
+                                    >
+                                      {/* Circle indicator for vertical progress bar */}
+                                      <div
+                                        className={`absolute right-[10px] w-2 h-2 rounded-full ${
+                                          lesson.watched_progress >= 100
+                                            ? "bg-green-400"
+                                            : "bg-white/50"
+                                        }`}
+                                      ></div>
+
+                                      <div className="flex items-center gap-2 mr-6">
+                                        {/* {!isAccessible && (
+                                          <span className="text-xs bg-red-500/80 text-white px-2 py-1 rounded font-semibold flex items-center gap-1">
+                                            <svg
+                                              className="w-3 h-3"
+                                              fill="currentColor"
+                                              viewBox="0 0 20 20"
+                                            >
+                                              <path
+                                                fillRule="evenodd"
+                                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                                clipRule="evenodd"
+                                              />
+                                            </svg>
+                                            נעול
+                                          </span>
+                                        )} */}
+                                      </div>
+                                      <span className="text-right flex-1 mr-3 relative">
+                                        {lesson.name}
+                                      </span>
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                            <p className="mt-3 text-xs text-white/70 text-right">
+                              לחץ שוב כדי להסתיר
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <button
