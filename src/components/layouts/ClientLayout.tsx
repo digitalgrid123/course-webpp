@@ -15,6 +15,7 @@ export default function ClientLayout({
     if (pathname.includes("/dashboard")) return "dashboard";
     if (pathname.includes("/my-courses")) return "myCourses";
     if (pathname.includes("/cart")) return "cart";
+    if (pathname.includes("/settings")) return "settings";
     return "dashboard";
   };
 
@@ -23,7 +24,7 @@ export default function ClientLayout({
       dashboard: "/dashboard",
       myCourses: "/my-courses",
       cart: "/cart",
-      profile: "/profile",
+      settings: "/settings",
     };
 
     if (routes[itemId]) {

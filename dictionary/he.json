@@ -171,6 +171,14 @@
     }
   },
 
+  "Settings": {
+    "metadata": {
+      "title": "הגדרות",
+      "description": "נהל את החשבון וההעדפות שלך",
+      "keywords": "הגדרות, חשבון, העדפות, פרופיל"
+    }
+  },
+
   "Footer": {
     "copyright": "© 2025 אפליקציית קורסים. קוד פתוח תחת רישיון MIT.",
     "githubLink": "GitHub"

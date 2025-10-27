@@ -170,7 +170,13 @@
       "keywords": "onboarding, courses, user setup, education, platform"
     }
   },
-
+  "Settings": {
+    "metadata": {
+      "title": "Settings",
+      "description": "Manage your account and preferences",
+      "keywords": "settings, account, preferences, profile"
+    }
+  },
   "Footer": {
     "copyright": "© 2025 Courses App. Open source under MIT license.",
     "githubLink": "GitHub"

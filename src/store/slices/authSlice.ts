@@ -86,6 +86,9 @@ export const registerUser = createAsyncThunk<
     const response = await registerApi(credentials);
 
     if (response.status && response.data) {
+      if (typeof window !== "undefined" && response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      }
       return { data: response.data, message: response.message };
     } else {
       return rejectWithValue({

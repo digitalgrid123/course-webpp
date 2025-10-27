@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { logout } from "@/store/slices/authSlice";
 import { Modal } from "../Modal/Modal";
-import { RootState } from "@/store"; // Adjust the import based on your store setup
+import { RootState } from "@/store";
 
 interface SidebarProps {
   activeItem?: string;
@@ -39,6 +39,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleItemClick = (itemId: string) => {
     if (onItemClick) onItemClick(itemId);
+    setIsMobileOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    if (onItemClick) onItemClick("settings"); // Trigger navigation via ClientLayout
     setIsMobileOpen(false);
   };
 
@@ -74,7 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               <div className="relative">
                 <Icon className="w-5 h-5" isActive={isActive} />
-
                 {item.id === "cart" && cartItemsCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center">
                     {cartItemsCount}
@@ -87,7 +91,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })}
       </nav>
       <div className="px-4 pb-6 space-y-2.5">
-        <button className="w-full flex items-center gap-3 px-4 py-3 text-white rounded-lg transition-colors">
+        <button
+          onClick={handleSettingsClick}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            activeItem === "settings"
+              ? "bg-indigo-100 text-black font-semibold"
+              : "text-white font-medium"
+          }`}
+        >
           <Settings className="w-5 h-5" />
           <span className="text-base font-medium">{t("settings")}</span>
         </button>
