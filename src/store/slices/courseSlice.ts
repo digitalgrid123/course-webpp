@@ -46,14 +46,12 @@ const initialState: CourseState = {
   successMessage: null,
 };
 
-// FIXED: More robust localStorage functions with proper key structure
 const saveProgressToLocalStorage = (
   courseId: number,
   lessonId: number,
   progress: number
 ) => {
   try {
-    // Use a unique key for each course-lesson combination
     const key = `lesson_progress_${courseId}_${lessonId}`;
     const data = {
       progress,
@@ -292,14 +290,12 @@ const courseSlice = createSlice({
 
       const { lessonId, progress, courseId } = action.payload;
 
-      // Save to localStorage first
       saveProgressToLocalStorage(courseId, lessonId, progress);
 
       // Update Redux state
       for (const courseModule of state.courseDetail.modules) {
         const lesson = courseModule.lessons.find((l) => l.id === lessonId);
         if (lesson) {
-          // FIXED: Only update if new progress is higher
           if (progress > (lesson.watched_progress || 0)) {
             lesson.watched_progress = progress;
 
