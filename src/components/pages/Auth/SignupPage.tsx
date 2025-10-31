@@ -127,7 +127,7 @@ export default function SignupPage() {
               <span>{t("alreadyHaveAccountPrefix")}</span>{" "}
               <Link
                 href="/login"
-                className="text-amber-gold font-medium underline"
+                className="text-amber-gold font-semibold underline"
               >
                 {t("alreadyHaveAccountAction")}
               </Link>
