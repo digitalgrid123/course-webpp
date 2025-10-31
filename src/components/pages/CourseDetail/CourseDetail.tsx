@@ -491,18 +491,19 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       </div>
     );
   }
-
   if (!courseDetail) {
     return (
       <div className="min-h-screen bg-white px-8 py-8 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">📚</div>
-          <div className="text-xl text-gray-500">No course data found</div>
+          <div className="text-xl text-gray-500">
+            לא נמצאו נתונים עבור הקורס
+          </div>
           <button
             onClick={() => router.back()}
             className="mt-4 px-6 py-2 bg-charcoal-blue text-white rounded-lg hover:bg-opacity-90 transition-all"
           >
-            Go Back
+            חזור назад
           </button>
         </div>
       </div>
@@ -578,7 +579,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                   {courseDetail.modules_count} מודולים
                 </h2>
 
-                {/* Total Progress Indicator */}
                 <div className="mb-6 bg-white/10 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold">התקדמות כוללת</span>

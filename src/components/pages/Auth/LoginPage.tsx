@@ -91,7 +91,6 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginFormValues) => {
     dispatch(clearAuthErrors());
-
     localStorage.setItem("loginFormData", JSON.stringify(values));
     const resultAction = await dispatch(loginUser(values));
 
@@ -129,7 +128,7 @@ export default function LoginPage() {
               <span>{t("noAccountPrefix")}</span>{" "}
               <Link
                 href="/register"
-                className="text-amber-gold font-medium underline"
+                className="text-amber-gold font-semibold underline"
               >
                 {t("noAccountAction")}
               </Link>
@@ -158,10 +157,10 @@ export default function LoginPage() {
                 isRTL={isRTL}
               />
 
-              <div className={`flex items-end text-sm`}>
+              <div className="flex items-end text-sm">
                 <Link
                   href="/forgot-password"
-                  className="text-slate-gray font-medium hover:text-amber-gold transition"
+                  className="text-slate-gray font-medium hover:text-amber-gold underline underline-offset-4 decoration-slate-gray transition"
                 >
                   {t("forgotPassword")}
                 </Link>
@@ -172,6 +171,20 @@ export default function LoginPage() {
                 isValid={isValid}
                 label={t("signIn")}
               />
+              <p className="text-sm text-gray-500 text-right leading-4 font-medium">
+                בהתחברות למערכת הינך מאשר את{" "}
+                <Link href="/terms" className="text-amber-gold underline">
+                  התקנון
+                </Link>{" "}
+                וגם את{" "}
+                <Link
+                  href="/privacy-policy"
+                  className="text-amber-gold underline"
+                >
+                  מדיניות הפרטיות
+                </Link>
+                .
+              </p>
             </form>
           </Form>
         </div>

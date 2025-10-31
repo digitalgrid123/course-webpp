@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-
 import { AlertCircle } from "lucide-react";
 import { uploadImageApi } from "@/services/uploadApi";
 
@@ -62,13 +61,13 @@ export default function ProfileImageUpload({
     e.target.value = "";
 
     if (!file.type.startsWith("image/")) {
-      setError("Please select a valid image file");
+      setError("אנא בחר קובץ תמונה תקין");
       return;
     }
 
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError("Image size must be less than 5MB");
+      setError("גודל התמונה חייב להיות קטן מ-5MB");
       return;
     }
 
@@ -80,7 +79,7 @@ export default function ProfileImageUpload({
       setCrop({ x: 0, y: 0 });
       setZoom(1);
     };
-    reader.onerror = () => setError("Failed to read file. Please try again.");
+    reader.onerror = () => setError("נכשל בקריאת הקובץ. נסה שוב.");
     reader.readAsDataURL(file);
   };
 
@@ -98,7 +97,7 @@ export default function ProfileImageUpload({
       const image = await createImage(imageSrc);
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Failed to get canvas context");
+      if (!ctx) throw new Error("נכשל ביצירת הקנבס");
 
       const { width, height, x, y } = croppedAreaPixels;
       canvas.width = width;
@@ -113,7 +112,7 @@ export default function ProfileImageUpload({
                 new File([blob], "profile-image.jpg", { type: "image/jpeg" })
               );
             } else {
-              reject(new Error("Failed to create image blob"));
+              reject(new Error("נכשל ביצירת תמונה"));
             }
           },
           "image/jpeg",
@@ -121,7 +120,7 @@ export default function ProfileImageUpload({
         );
       });
     } catch {
-      setError("Failed to process image");
+      setError("נכשל בעיבוד התמונה");
       return null;
     }
   };
@@ -134,7 +133,7 @@ export default function ProfileImageUpload({
     setProcessing(false);
 
     if (!file) {
-      setError("Failed to process image. Please try again.");
+      setError("נכשל בעיבוד התמונה. נסה שוב.");
       return;
     }
 
@@ -156,10 +155,10 @@ export default function ProfileImageUpload({
         onUploadComplete(imageUrl);
         setError(null);
       } else {
-        setError(response.message || "Invalid response from server");
+        setError(response.message || "תגובה לא תקינה מהשרת");
       }
     } catch {
-      setError("Upload failed. Please try again.");
+      setError("העלאה נכשלה. נסה שוב.");
       setPreview(null);
     } finally {
       setUploading(false);
@@ -180,13 +179,16 @@ export default function ProfileImageUpload({
         {preview ? (
           <Image
             src={preview}
-            alt="Profile"
+            alt="תמונת פרופיל"
             fill
             className="object-cover"
             unoptimized={preview.startsWith("blob:")}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-gray-400">
+          <div
+            className="flex flex-col items-center justify-center text-gray-400 cursor-pointer hover:text-gray-600 transition"
+            onClick={() => inputRef.current?.click()}
+          >
             <svg
               className="w-12 h-12 mb-1"
               fill="none"
@@ -200,7 +202,7 @@ export default function ProfileImageUpload({
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
               />
             </svg>
-            <span className="text-xs">No Image</span>
+            <span className="text-xs">אין תמונה</span>
           </div>
         )}
       </div>
@@ -218,10 +220,16 @@ export default function ProfileImageUpload({
           type="button"
           disabled={uploading || processing}
           variant="secondary"
-          className="cursor-pointer rounded-full px-6 py-2"
+          className="cursor-pointer rounded-full px-6 py-2 flex items-center gap-2"
           onClick={() => inputRef.current?.click()}
         >
-          {uploading ? "Uploading..." : "Upload Image"}
+          {uploading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </>
+          ) : (
+            "העלה תמונה"
+          )}
         </Button>
 
         {error && (
@@ -236,7 +244,7 @@ export default function ProfileImageUpload({
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-xl shadow-lg bg-white">
           <DialogHeader className="px-6 py-4 border-b">
             <DialogTitle className="text-lg font-semibold">
-              Crop Your Image
+              חתוך את התמונה שלך
             </DialogTitle>
           </DialogHeader>
 
@@ -258,7 +266,7 @@ export default function ProfileImageUpload({
 
           <div className="px-6 py-4 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-700 font-medium">Zoom</label>
+              <label className="text-sm text-gray-700 font-medium">זום</label>
               <span className="text-sm text-gray-500">{zoom.toFixed(1)}x</span>
             </div>
             <Slider
@@ -279,7 +287,7 @@ export default function ProfileImageUpload({
               onClick={handleCropperClose}
               disabled={uploading || processing}
             >
-              Cancel
+              ביטול
             </Button>
             <Button
               type="button"
@@ -287,11 +295,7 @@ export default function ProfileImageUpload({
               onClick={uploadCroppedImage}
               disabled={uploading || processing}
             >
-              {processing
-                ? "Processing..."
-                : uploading
-                ? "Uploading..."
-                : "Save & Upload"}
+              {processing ? "מעבד..." : uploading ? "מעלה..." : "שמור והעלה"}
             </Button>
           </DialogFooter>
         </DialogContent>

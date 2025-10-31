@@ -44,13 +44,12 @@
   --radius-20: 20px;
 }
 
-* {
-  font-family: var(--font-family-jakarta);
-}
-
 @layer base {
-  * {
-    font-family: "PlusJakartaSans", sans-serif;
+  html,
+  body {
+    font-family: var(--font-family-jakarta);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   input:-webkit-autofill,

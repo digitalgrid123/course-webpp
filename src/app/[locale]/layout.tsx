@@ -3,19 +3,10 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { getMessages, setRequestLocale } from "next-intl/server";
 
-import { Courgette } from "next/font/google";
 import "../globals.css";
 import ReduxProvider from "@/providers/ReduxProvider";
 
 import ToastProvider from "@/providers/ToastProvider";
-
-// Load the font using next/font/google
-const courgette = Courgette({
-  weight: "400",
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-courgette", // Optional: create a CSS variable
-});
 
 const locales = ["en", "he"] as const;
 type Locale = (typeof locales)[number];
@@ -41,7 +32,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir="rtl">
-      <body className={`antialiased ${courgette.variable}`}>
+      <body>
         <ReduxProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             {children}

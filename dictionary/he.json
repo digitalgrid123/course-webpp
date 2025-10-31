@@ -23,7 +23,7 @@
   "Courses": {
     "ourCourses": "הקורסים שלנו",
     "searchCourses": "חיפוש קורסים",
-    "allCourses": "כל הקורסים",
+    "allCourses": "סנן לפי תואר",
     "metadata": {
       "title": "לוח בקרה של קורסים - למד וצמח",
       "description": "חקור ונהל את הקורסים שלך בלוח הבקרה. גש לחומרי הלמידה שלך ועקוב אחר ההתקדמות שלך.",
@@ -65,7 +65,7 @@
     "emailLabel": "מייל",
     "emailPlaceholder": "example@gmail.com",
     "passwordLabel": "סיסמא",
-    "passwordPlaceholder": "הכנס סיסמה",
+    "passwordPlaceholder": "הזן את הסיסמא שלך",
     "rememberMe": "זכור אותי",
     "forgotPassword": "שכחת סיסמה?",
     "signIn": "התחברות",

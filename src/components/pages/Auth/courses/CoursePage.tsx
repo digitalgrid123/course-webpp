@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Search } from "lucide-react";
 import { CourseCard } from "@/components/common/CourseCard/CourseCard";
 import Image from "next/image";
@@ -25,17 +25,58 @@ export default function CoursesPage() {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(t("allCourses"));
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedYear, setSelectedYear] = useState("כל השנים");
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const yearDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     dispatch(fetchDashboardHome());
   }, [dispatch]);
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (
+        yearDropdownRef.current &&
+        !yearDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsYearDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     if (error) {
       toast.error(`Error: ${error}`);
     }
   }, [error]);
+
+  // Extract unique years from degree_years
+  const availableYears = useMemo(() => {
+    if (!userProfile?.degree_years) return [];
+    const years = userProfile.degree_years.map((degreeYear: DegreeYear) => {
+      // The year property can be either a string or a Year object
+      const yearValue = degreeYear.year as string | { name: string };
+      if (typeof yearValue === "string") {
+        return yearValue;
+      }
+      return yearValue?.name || "";
+    });
+    return ["כל השנים", ...Array.from(new Set(years)).filter(Boolean)];
+  }, [userProfile]);
 
   const allCourses = useMemo(() => {
     if (!userProfile?.degree_years) return [];
@@ -49,18 +90,44 @@ export default function CoursesPage() {
       course.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (selectedCategory !== t("allCourses")) {
-      filtered = filtered;
+    // Note: Category filtering is commented out since there's no category field in the data
+    // If you want to implement category filtering, you'll need to add a category field to your Course type
+    // and populate it in your data
+    // if (selectedCategory !== t("allCourses")) {
+    //   filtered = filtered.filter((course: Course) =>
+    //     course.category === selectedCategory
+    //   );
+    // }
+
+    // Filter by year
+    if (selectedYear !== "כל השנים" && userProfile?.degree_years) {
+      const yearCourses = userProfile.degree_years
+        .filter((degreeYear: DegreeYear) => {
+          const yearValue = degreeYear.year as string | { name: string };
+          const yearName =
+            typeof yearValue === "string" ? yearValue : yearValue?.name || "";
+          return yearName === selectedYear;
+        })
+        .flatMap((degreeYear: DegreeYear) => degreeYear.courses || []);
+
+      filtered = filtered.filter((course: Course) =>
+        yearCourses.some((yearCourse: Course) => yearCourse.id === course.id)
+      );
     }
 
     return filtered;
-  }, [allCourses, searchTerm, selectedCategory, t]);
+  }, [allCourses, searchTerm, selectedYear, userProfile]);
 
   const handleSearch = () => {};
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
-    setIsDropdownOpen(false);
+    setIsCategoryDropdownOpen(false);
+  };
+
+  const handleYearSelect = (year: string) => {
+    setSelectedYear(year);
+    setIsYearDropdownOpen(false);
   };
 
   return (
@@ -71,8 +138,8 @@ export default function CoursesPage() {
         </h1>
       </div>
 
-      <div className="grid grid-cols-10 items-center gap-4 justify-between relative">
-        <div className="relative h-12 col-span-5">
+      <div className="grid grid-cols-2 items-center gap-4 relative">
+        <div className="relative h-12">
           <Input
             type="text"
             placeholder={t("searchCourses")}
@@ -87,35 +154,67 @@ export default function CoursesPage() {
           />
         </div>
 
-        <div className="relative col-span-5 flex justify-end">
-          <button
-            className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <span className="text-base text-slate-gray font-medium truncate">
-              {selectedCategory}
-            </span>
-            <Image
-              src={"/assets/images/icons/circlesfour.svg"}
-              width={20}
-              height={20}
-              alt="circle-four"
-            />
-          </button>
+        <div className="flex gap-4 justify-end">
+          <div className="relative" ref={categoryDropdownRef}>
+            <button
+              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl w-full"
+              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+            >
+              <span className="text-base text-slate-gray font-bold truncate">
+                {selectedCategory}
+              </span>
+              <Image
+                src={"/assets/images/icons/circlesfour.svg"}
+                width={20}
+                height={20}
+                alt="circle-four"
+              />
+            </button>
 
-          {isDropdownOpen && (
-            <ul className="absolute top-full left-2 mt-2 w-40 bg-white border-1.5 rounded shadow-md border-amber-gold z-10">
-              {categories.map((cat) => (
-                <li
-                  key={cat}
-                  className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => handleCategorySelect(cat)}
-                >
-                  {cat}
-                </li>
-              ))}
-            </ul>
-          )}
+            {isCategoryDropdownOpen && (
+              <ul className="absolute top-full left-2 mt-2 w-40 bg-white border-1.5 rounded shadow-md border-amber-gold z-10">
+                {categories.map((cat) => (
+                  <li
+                    key={cat}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleCategorySelect(cat)}
+                  >
+                    {cat}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="relative" ref={yearDropdownRef}>
+            <button
+              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl w-full"
+              onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
+            >
+              <span className="text-base text-slate-gray font-bold truncate">
+                {selectedYear}
+              </span>
+              <Image
+                src={"/assets/images/icons/chartBar.svg"}
+                width={20}
+                height={20}
+                alt="year-filter"
+              />
+            </button>
+
+            {isYearDropdownOpen && (
+              <ul className="absolute top-full left-2 mt-2 w-40 bg-white border-1.5 rounded shadow-md border-amber-gold z-10">
+                {availableYears.map((year) => (
+                  <li
+                    key={year}
+                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => handleYearSelect(year)}
+                  >
+                    {year}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
 

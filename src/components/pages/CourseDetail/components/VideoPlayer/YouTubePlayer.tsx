@@ -257,10 +257,10 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
                   d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                 />
               </svg>
-              <p className="text-sm">Loading video...</p>
+              <p className="text-sm">טוען סרטון...</p>
               {initialProgress > 0 && (
                 <p className="text-xs text-gray-400 mt-2">
-                  Resuming from {initialProgress}%
+                  ממשיך מ-{initialProgress}%
                 </p>
               )}
             </div>

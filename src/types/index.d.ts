@@ -40,7 +40,7 @@ export interface RegisterCredentials {
   password_confirmation: string;
   first_name: string;
   last_name: string;
-  profile_image: string;
+  profile_image?: string;
 }
 
 export interface RegisterUser {
@@ -122,6 +122,7 @@ export interface Degree {
 export interface DegreeYear {
   id: number;
   degree_id: number;
+  year: string;
   year_id: number;
   pivot: {
     user_id: number;

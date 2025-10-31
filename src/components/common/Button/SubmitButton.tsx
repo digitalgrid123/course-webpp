@@ -1,7 +1,5 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-
 interface SubmitButtonProps {
   isSubmitting: boolean;
   isValid: boolean;
@@ -23,7 +21,7 @@ export default function SubmitButton({
         w-full py-3 px-4 rounded-lg
         font-medium text-base
         transition-all duration-200
-        flex items-center justify-center gap-2
+        flex items-center justify-center
         ${
           isSubmitting || !isValid
             ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -33,10 +31,7 @@ export default function SubmitButton({
       `}
     >
       {isSubmitting ? (
-        <>
-          <Loader2 className="animate-spin" size={20} />
-          <span>Loading...</span>
-        </>
+        <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
       ) : (
         label
       )}

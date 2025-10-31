@@ -27,7 +27,7 @@ export default function MyCourses() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div className="p-6 h-full">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold text-charcoal-blue">
             {t("myCourses")}
@@ -61,13 +61,13 @@ export default function MyCourses() {
 
   if (!myCourses || myCourses.length === 0) {
     return (
-      <div className="p-6">
+      <div className="p-6 h-full flex flex-col">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-semibold text-charcoal-blue">
             {t("myCourses")}
           </h1>
         </div>
-        <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <div className="flex flex-col justify-center items-center  space-y-4 flex-1">
           <svg
             className="w-20 h-20 text-gray-400"
             fill="none"

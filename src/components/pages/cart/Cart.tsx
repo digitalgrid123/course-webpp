@@ -15,6 +15,7 @@ import {
 } from "@/store/slices/cartSlice";
 import { RootState, AppDispatch } from "@/store";
 import toast from "react-hot-toast";
+import { ShoppingCart } from "lucide-react";
 
 export default function Cart() {
   const t = useTranslations("MyCart");
@@ -121,15 +122,24 @@ export default function Cart() {
   };
 
   return (
-    <div className="p-6" dir="rtl">
+    <div className="p-6 flex flex-col min-h-screen" dir="rtl">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-semibold text-charcoal-blue">
           {t("myCart")}
         </h1>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-8 gap-8">
-        <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={`grid grid-cols-1 lg:grid-cols-8 gap-8 ${
+          cart.items.length > 0 ? "" : "flex-1"
+        }`}
+      >
+        <div
+          className={`${
+            cart.items.length > 0
+              ? "lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "col-span-full flex items-center justify-center"
+          }`}
+        >
           {cart.items.length > 0 ? (
             cart.items.map((course) => (
               <CourseCard
@@ -143,65 +153,79 @@ export default function Cart() {
               />
             ))
           ) : (
-            <p className="text-center col-span-full">{t("noCoursesInCart")}</p>
+            <div className="flex flex-col items-center justify-center gap-4">
+              <ShoppingCart className="w-20 h-20 text-gray-400" />
+              <p className="text-center text-gray-500 text-lg">
+                {t("noCoursesInCart")}
+              </p>
+            </div>
           )}
         </div>
+        {cart.items.length > 0 && (
+          <div className="lg:col-span-3">
+            <div className="sticky top-6">
+              <Card className="bg-amber-gold text-white rounded-2xl p-0 border-0 w-full">
+                <CardContent className="p-6 text-center">
+                  <h2 className="text-lg font-bold mb-2">סיכום הזמנה</h2>
+                  <div className="flex items-center gap-2 mb-4 justify-center">
+                    <Image
+                      src={"/assets/images/icons/module-white.svg"}
+                      width={16}
+                      height={16}
+                      alt="module"
+                    />
+                    <p className="text-xs text-white">
+                      {cart.totalItems} מוצרים
+                    </p>
+                  </div>
 
-        <div className="lg:col-span-3">
-          <div className="sticky top-6">
-            <Card className="bg-amber-gold text-white rounded-2xl p-0 border-0 w-full">
-              <CardContent className="p-6 text-center">
-                <h2 className="text-lg font-bold mb-2">סיכום הזמנה</h2>
-                <div className="flex items-center gap-2 mb-4 justify-center">
-                  <Image
-                    src={"/assets/images/icons/module-white.svg"}
-                    width={16}
-                    height={16}
-                    alt="module"
-                  />
-                  <p className="text-xs text-white">{cart.totalItems} מוצרים</p>
-                </div>
-
-                <div className="text-right mb-2 text-sm text-white" dir="ltr">
-                  ?יש לך קופון
-                </div>
-
-                <Formik
-                  initialValues={{ coupon: "" }}
-                  onSubmit={handlePurchase}
-                >
-                  {() => (
-                    <Form className="flex flex-col gap-4">
-                      <Field name="coupon">
-                        {({ field }: FieldProps) => (
-                          <FormInputField
-                            id="coupon"
-                            type="text"
-                            label=""
-                            placeholder="הזן אותו כאן"
-                            {...field}
-                            isRTL
-                            className="bg-gray-100 rounded-lg py-5!"
-                          />
-                        )}
-                      </Field>
-
-                      <Button
-                        type="submit"
-                        className="bg-black hover:bg-black/90 text-white w-full py-3 rounded-md text-sm font-medium"
-                        disabled={cart.totalItems === 0 || cart.purchaseLoading}
+                  {cart.totalItems > 0 && (
+                    <>
+                      <div
+                        className="text-right mb-2 text-sm text-white"
+                        dir="ltr"
                       >
-                        {cart.purchaseLoading
-                          ? "מעבד..."
-                          : `סה״כ לתשלום ${cart.totalAmount}₪`}
-                      </Button>
-                    </Form>
+                        ?יש לך קופון
+                      </div>
+                      <Formik
+                        initialValues={{ coupon: "" }}
+                        onSubmit={handlePurchase}
+                      >
+                        {() => (
+                          <Form className="flex flex-col gap-4">
+                            <Field name="coupon">
+                              {({ field }: FieldProps) => (
+                                <FormInputField
+                                  id="coupon"
+                                  type="text"
+                                  label=""
+                                  placeholder="הזן אותו כאן"
+                                  {...field}
+                                  isRTL
+                                  className="bg-gray-100 rounded-lg py-5!"
+                                />
+                              )}
+                            </Field>
+
+                            <Button
+                              type="submit"
+                              className="bg-black hover:bg-black/90 text-white w-full py-3 rounded-md text-sm font-medium"
+                              disabled={cart.purchaseLoading}
+                            >
+                              {cart.purchaseLoading
+                                ? "מעבד..."
+                                : `סה״כ לתשלום ${cart.totalAmount}₪`}
+                            </Button>
+                          </Form>
+                        )}
+                      </Formik>
+                    </>
                   )}
-                </Formik>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
