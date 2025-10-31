@@ -58,9 +58,8 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   const isLessonAccessible = useCallback(
     (moduleIndex: number, lessonIndex: number) => {
       if (courseDetail?.is_my_course === 1) {
-        return true; // All lessons accessible if user owns the course
+        return true;
       }
-      // Only first lesson of first module is accessible
       return moduleIndex === 0 && lessonIndex === 0;
     },
     [courseDetail]
@@ -74,12 +73,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       setCurrentProgress(savedProgress);
       setLastProgressUpdate(savedProgress);
       hasInitializedProgress.current = true;
-
-      console.log("Initialized lesson progress:", {
-        lessonId: selectedLesson,
-        savedProgress,
-        timestamp: new Date().toISOString(),
-      });
     }
   }, [selectedLesson, courseDetail, getCurrentLessonProgress]);
 
@@ -90,15 +83,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       const currentSavedProgress = getCurrentLessonProgress();
 
       if (progressPercentage <= currentSavedProgress) {
-        console.log("Progress not greater than saved, skipping update:", {
-          current: progressPercentage,
-          saved: currentSavedProgress,
-        });
         return;
       }
 
       if (currentSavedProgress >= 100) {
-        console.log("Lesson already completed, skipping progress update");
         return;
       }
 
@@ -118,13 +106,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
             courseId: courseDetail.id,
           })
         );
-
-        console.log("Progress saved:", {
-          lessonId,
-          progress: progressPercentage,
-          previousProgress: currentSavedProgress,
-          timestamp: new Date().toISOString(),
-        });
       }
     },
     [dispatch, getCurrentLessonProgress, courseDetail]
@@ -187,7 +168,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     const moduleIndex =
       courseDetail?.modules.findIndex((m) => m.id === moduleId) || 0;
 
-    // If course is not owned and trying to access modules beyond first
     if (courseDetail?.is_my_course === 0 && moduleIndex > 0) {
       toast.error("יש לרכוש את הקורס כדי לגשת למודולים נוספים");
       return;
@@ -195,12 +175,12 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
     setSelectedModule(selectedModule === moduleId ? null : moduleId);
   };
+
   const handleLessonClick = (
     lessonId: number,
     moduleIndex: number,
     lessonIndex: number
   ) => {
-    // Check if lesson is accessible
     if (!isLessonAccessible(moduleIndex, lessonIndex)) {
       toast.error("יש לרכוש את הקורס כדי לגשת לשיעור זה");
       return;
@@ -221,12 +201,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
     setLastProgressUpdate(savedProgress);
 
     hasInitializedProgress.current = false;
-
-    console.log("Switching to lesson:", {
-      lessonId,
-      savedProgress,
-      timestamp: new Date().toISOString(),
-    });
   };
 
   const debouncedProgressUpdate = useCallback(
@@ -234,7 +208,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       const currentSavedProgress = getCurrentLessonProgress();
 
       if (currentSavedProgress >= 100) {
-        console.log("Lesson already completed, skipping debounced update");
         return;
       }
 
@@ -260,7 +233,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       const currentSavedProgress = getCurrentLessonProgress();
 
       if (currentSavedProgress >= 100) {
-        console.log("Lesson already at 100%, skipping progress tracking");
         return;
       }
 
@@ -279,19 +251,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       if (shouldUpdate && finalProgress > lastProgressUpdate) {
         setLastProgressUpdate(finalProgress);
         debouncedProgressUpdate(selectedLesson, finalProgress);
-
-        console.log("Video Progress Update:", {
-          lessonId: selectedLesson,
-          progress: finalProgress,
-          savedProgress: currentSavedProgress,
-          currentTime: Math.floor(data.currentTime),
-          duration: Math.floor(data.duration),
-          timestamp: new Date().toISOString(),
-        });
-
-        if (finalProgress >= 95) {
-          console.log("✅ Video completed! Lesson marked as done.");
-        }
       }
     },
     [
@@ -306,16 +265,12 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   const handleVideoPause = useCallback(
     (data: { played: number; currentTime: number; duration: number }) => {
       if (!selectedLesson || !hasInitializedProgress.current) {
-        console.log(
-          "Pause event ignored: No selected lesson or not initialized"
-        );
         return;
       }
 
       const currentSavedProgress = getCurrentLessonProgress();
 
       if (currentSavedProgress >= 100) {
-        console.log("Lesson already at 100%, skipping pause progress update");
         return;
       }
 
@@ -324,7 +279,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
         !Number.isFinite(data.played) ||
         !Number.isFinite(data.duration)
       ) {
-        console.log("Invalid pause data:", data);
         return;
       }
 
@@ -341,24 +295,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       if (finalProgress > currentSavedProgress) {
         setCurrentProgress(finalProgress);
         sendProgressUpdate(selectedLesson, finalProgress);
-
-        console.log("Video Paused - Progress Saved:", {
-          lessonId: selectedLesson,
-          progress: finalProgress,
-          previousProgress: currentSavedProgress,
-          currentTime: Math.floor(data.currentTime),
-          duration: Math.floor(data.duration),
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        console.log("Pause event: No progress update needed", {
-          lessonId: selectedLesson,
-          progress: finalProgress,
-          savedProgress: currentSavedProgress,
-          currentTime: Math.floor(data.currentTime),
-          duration: Math.floor(data.duration),
-          timestamp: new Date().toISOString(),
-        });
       }
     },
     [
@@ -436,13 +372,30 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
         isYouTube: false,
         thumbnail: courseDetail?.image || null,
         lessonName: null,
+        lessonType: null,
+        meetingLink: null,
+        scheduleDateTime: null,
+        details: courseDetail?.details || null,
+      };
+    }
+
+    if (currentLesson.type === 3 && currentLesson.link) {
+      return {
+        url: null,
+        videoId: null,
+        isYouTube: false,
+        thumbnail: currentLesson.thumbnail || courseDetail?.image,
+        lessonName: currentLesson.name,
+        lessonType: 3,
+        meetingLink: currentLesson.link,
+        scheduleDateTime: currentLesson.schedule_datetime,
+        details: currentLesson.details || courseDetail?.details || null,
       };
     }
 
     const videoUrl = currentLesson.video || currentLesson.link || null;
     const isYT = videoUrl ? isYouTubeUrl(videoUrl) : false;
     const videoId = videoUrl && isYT ? getYouTubeVideoId(videoUrl) : null;
-
     const fullVideoUrl = videoUrl && !isYT ? getFullUrl(videoUrl) : videoUrl;
 
     return {
@@ -451,6 +404,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       isYouTube: isYT,
       thumbnail: currentLesson.thumbnail || courseDetail?.image,
       lessonName: currentLesson.name,
+      lessonType: currentLesson.type,
+      meetingLink: null,
+      scheduleDateTime: null,
+      details: currentLesson.details || courseDetail?.details || null,
     };
   };
 
@@ -465,6 +422,24 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       default:
         return "קובץ";
     }
+  };
+
+  const formatScheduleDateTime = (dateTimeString: string | null) => {
+    if (!dateTimeString) return null;
+
+    const date = new Date(dateTimeString);
+    const formattedDate = date.toLocaleDateString("he-IL", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+    const formattedTime = date.toLocaleTimeString("he-IL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+
+    return { date: formattedDate, time: formattedTime };
   };
 
   if (detailLoading) {
@@ -491,6 +466,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
       </div>
     );
   }
+
   if (!courseDetail) {
     return (
       <div className="min-h-screen bg-white px-8 py-8 flex items-center justify-center">
@@ -503,7 +479,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
             onClick={() => router.back()}
             className="mt-4 px-6 py-2 bg-charcoal-blue text-white rounded-lg hover:bg-opacity-90 transition-all"
           >
-            חזור назад
+            חזור אחורה
           </button>
         </div>
       </div>
@@ -511,6 +487,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   }
 
   const videoData = getVideoData();
+  console.log("🚀 ~ CourseDetail ~ videoData:", videoData);
   const currentLesson = getCurrentLesson();
 
   const handleBackNavigation = () => {
@@ -543,7 +520,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                       <h1 className="text-lg font-bold text-center mb-2.5">
                         {courseDetail.name}
                       </h1>
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex items-center gap-2.5 justify-center">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center mr-4 overflow-hidden relative">
                           <Image
                             src={
@@ -565,11 +542,18 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                     <h3 className="font-bold text-sm mb-3 text-right">
                       קורות חיים:
                     </h3>
-                    <ul className="list-disc pr-5 space-y-2 text-xs text-white/95 text-right">
-                      <li>{courseDetail.teacher.bio}</li>
-                      <li>{courseDetail.teacher.detail}</li>
-                      <li>מספר קורסים: {courseDetail.teacher.courses_count}</li>
-                    </ul>
+                    <div className="h-full max-h-64 overflow-y-auto text-xs text-white text-center space-y-3 custom-scrollbar">
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: courseDetail.teacher.bio,
+                        }}
+                      ></div>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: courseDetail.teacher.detail,
+                        }}
+                      ></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -623,7 +607,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                   </div>
                 </div>
 
-                <div className="space-y-1 mb-6">
+                <div className="space-y-1 ">
                   {courseDetail.modules.map((courseModule, moduleIndex) => {
                     const isModuleAccessible =
                       courseDetail.is_my_course === 1 || moduleIndex === 0;
@@ -717,7 +701,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                                           : "hover:bg-white/10 cursor-pointer"
                                       }`}
                                     >
-                                      {/* Circle indicator for vertical progress bar */}
                                       <div
                                         className={`absolute right-[10px] w-2 h-2 rounded-full ${
                                           lesson.watched_progress >= 100
@@ -726,24 +709,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                                         }`}
                                       ></div>
 
-                                      <div className="flex items-center gap-2 mr-6">
-                                        {/* {!isAccessible && (
-                                          <span className="text-xs bg-red-500/80 text-white px-2 py-1 rounded font-semibold flex items-center gap-1">
-                                            <svg
-                                              className="w-3 h-3"
-                                              fill="currentColor"
-                                              viewBox="0 0 20 20"
-                                            >
-                                              <path
-                                                fillRule="evenodd"
-                                                d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                                clipRule="evenodd"
-                                              />
-                                            </svg>
-                                            נעול
-                                          </span>
-                                        )} */}
-                                      </div>
                                       <span className="text-right flex-1 mr-3 relative">
                                         {lesson.name}
                                       </span>
@@ -762,39 +727,109 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                   })}
                 </div>
 
-                <button
-                  onClick={handleCartAction}
-                  className={`w-full py-3 px-4 rounded-10 transition-all font-semibold text-sm ${
-                    isInCart
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : "bg-gray-900 hover:bg-gray-800 text-white"
-                  }`}
-                >
-                  {isInCart ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg
-                        className="w-5 h-5"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      נוסף לעגלה
-                    </span>
-                  ) : (
-                    `מחיר הקורס המלא: ${courseDetail.price_type} ${courseDetail.price}`
-                  )}
-                </button>
+                {courseDetail?.is_my_course === 0 && (
+                  <button
+                    onClick={handleCartAction}
+                    className={`w-full py-3 px-4 rounded-10 transition-all font-semibold text-sm mt-6 ${
+                      isInCart
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-gray-900 hover:bg-gray-800 text-white"
+                    }`}
+                  >
+                    {isInCart ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg
+                          className="w-5 h-5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        נוסף לעגלה
+                      </span>
+                    ) : (
+                      `מחיר הקורס המלא:  ₪${courseDetail.price}`
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-3 space-y-6">
-            {videoData.isYouTube && videoData.videoId ? (
+            {/* Type 3: Meeting Link Display */}
+            {videoData.lessonType === 3 && videoData.meetingLink ? (
+              <div className="bg-white rounded-4xl shadow-md overflow-hidden">
+                <div className="bg-gray-900 aspect-video relative rounded-4xl flex items-center justify-center">
+                  {videoData.thumbnail && (
+                    <Image
+                      src={getFullUrl(videoData.thumbnail)}
+                      alt={videoData.lessonName || courseDetail.name}
+                      fill
+                      style={{ objectFit: "cover" }}
+                      className="opacity-60"
+                    />
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+
+                  <div className="relative z-10 text-center text-white px-8">
+                    <svg
+                      className="w-20 h-20 mx-auto mb-6"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
+                    </svg>
+                    <h3 className="text-2xl font-bold mb-4">
+                      שיעור זום/גוגל מיט
+                    </h3>
+                    {videoData.scheduleDateTime && (
+                      <div className="mb-6 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                        {(() => {
+                          const schedule = formatScheduleDateTime(
+                            videoData.scheduleDateTime
+                          );
+                          return schedule ? (
+                            <>
+                              <p className="text-sm mb-2">תאריך ושעה:</p>
+                              <p className="text-xl font-bold">
+                                {schedule.date} בשעה {schedule.time}
+                              </p>
+                            </>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                    <a
+                      href={videoData.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-3 bg-amber-gold hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-lg transition-all transform hover:scale-105"
+                    >
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
+                      הצטרף לשיעור
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : videoData.isYouTube && videoData.videoId ? (
               <YouTubePlayer
                 videoId={videoData.videoId}
                 onProgress={handleVideoProgress}
@@ -829,9 +864,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                       >
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
                       </svg>
-                      <p className="text-lg">No video available</p>
+                      <p className="text-lg">אין וידאו זמין</p>
                       <p className="text-sm text-gray-400 mt-2">
-                        Select a lesson from the sidebar
+                        בחר שיעור מהתפריט
                       </p>
                     </div>
                   )}
@@ -875,6 +910,22 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-charcoal-blue"></div>
                   )}
                 </button>
+
+                {videoData.lessonType === 3 && (
+                  <button
+                    onClick={() => setActiveTab("join")}
+                    className={`px-6 py-4 transition-all relative ${
+                      activeTab === "join"
+                        ? "text-charcoal-blue font-bold"
+                        : "text-gray-400 hover:text-charcoal-blue hover:bg-gray-50"
+                    }`}
+                  >
+                    שיעורי זום{" "}
+                    {activeTab === "join" && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-charcoal-blue"></div>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab("about")}
                   className={`px-6 py-4 transition-all relative ${
@@ -883,7 +934,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                       : "text-gray-400 hover:text-charcoal-blue hover:bg-gray-50"
                   }`}
                 >
-                  על השיעור
+                  על הקורס{" "}
                   {activeTab === "about" && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-charcoal-blue"></div>
                   )}
@@ -891,6 +942,66 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
               </div>
 
               <div className="p-6">
+                {activeTab === "join" && videoData.lessonType === 3 && (
+                  <div className="space-y-6">
+                    <div className=" rounded-xl p-6 ">
+                      <div className="flex items-start gap-4 mb-6">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-medium text-charcoal-blue mb-2">
+                            {videoData.lessonName}
+                          </h3>
+                          {videoData.details && (
+                            <p
+                              className="text-sm text-charcoal-blue"
+                              dangerouslySetInnerHTML={{
+                                __html: videoData.details,
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6">
+                        <a
+                          href={videoData.meetingLink || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-3  bg-amber-gold hover:bg-amber-600 text-white font-medium text-base py-2.5 px-3.5 rounded-xl transition-all transform hover:scale-105 shadow-lg"
+                        >
+                          כניסה לפגישה{" "}
+                        </a>
+                        {videoData.scheduleDateTime && (
+                          <div className="border-slate-200 border border-solid rounded-xl py-2.5 px-3.5 flex items-center gap-2">
+                            {(() => {
+                              const schedule = formatScheduleDateTime(
+                                videoData.scheduleDateTime
+                              );
+                              return schedule ? (
+                                <div>
+                                  <p className="text-gray-700 font-medium">
+                                    {schedule.time}{" "}
+                                    <span className="text-gray-500">•</span>{" "}
+                                    {schedule.date}
+                                  </p>
+                                </div>
+                              ) : null;
+                            })()}
+
+                            <div className="w-5 h-5 relative shrink-0">
+                              <Image
+                                src="/assets/images/icons/CalendarDots.svg"
+                                alt="Lesson Thumbnail"
+                                fill
+                                className="object-cover rounded-lg"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {activeTab === "about" && (
                   <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-charcoal-blue mb-2">
@@ -905,6 +1016,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                     />
                   </div>
                 )}
+
                 {activeTab === "material" && (
                   <div className="space-y-4">
                     <h2 className="text-2xl font-bold text-charcoal-blue mb-4">

@@ -11,19 +11,19 @@ export async function generateMetadata({
   const { id } = await params;
 
   return {
-    title: `Course ${id} | Our Courses`,
-    description: `Details and information about Course ${id}. Learn more about the instructor, content, and level.`,
+    title: `קורס ${id} | הקורסים שלנו`,
+    description: `פרטים ומידע על קורס ${id}. למדו עוד על המרצה, התוכן והרמה.`,
     openGraph: {
-      title: `Course ${id} | Our Courses`,
-      description: `Explore all details for Course ${id}.`,
+      title: `קורס ${id} | הקורסים שלנו`,
+      description: `גלו את כל הפרטים על קורס ${id}.`,
       url: `https://yourdomain.com/courses/${id}`,
-      siteName: "Our Courses",
+      siteName: "הקורסים שלנו",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `Course ${id} | Our Courses`,
-      description: `Discover what Course ${id} has to offer.`,
+      title: `קורס ${id} | הקורסים שלנו`,
+      description: `גלו מה יש לקורס ${id} להציע.`,
     },
   };
 }
