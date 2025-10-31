@@ -301,6 +301,8 @@ export interface LessonProgressResponse {
 
 export interface BuyCourseRequest {
   course_ids: number[];
+  price: number;
+  coupon_id?: number;
 }
 
 export interface BuyCourseResponse {
@@ -311,4 +313,36 @@ export interface BuyCourseResponse {
     skipped_courses: number[];
   };
   errors: null | string[];
+}
+
+export interface FilterCoursesResponse {
+  status: boolean;
+  message: string;
+  data: Course[];
+  errors: Record<string, string[]> | null;
+}
+
+// Add to your existing types
+export interface CouponValidationRequest {
+  coupon: string;
+  price: number;
+}
+
+export interface CouponValidationData {
+  new_price: number;
+  discount: number;
+  coupon_id?: number;
+}
+
+export interface CouponValidationResponse {
+  status: boolean;
+  message: string;
+  data: CouponValidationData | null;
+  errors: string[] | null;
+}
+
+export interface BuyCourseRequest {
+  course_ids: number[];
+  coupon?: string;
+  coupon_id?: number;
 }

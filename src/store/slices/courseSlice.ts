@@ -4,6 +4,7 @@ import {
   getCourseDetailApi,
   updateLessonProgressApi,
   getMyCoursesApi,
+  filterCoursesApi,
 } from "@/services/courseApi";
 import {
   UserProfile,
@@ -26,6 +27,8 @@ interface CourseState {
   error: string | null;
   fieldErrors: Record<string, string[]> | null;
   successMessage: string | null;
+  filteredCourses: Course[] | null;
+  filterLoading: boolean;
 }
 
 interface ErrorResponse {
@@ -44,6 +47,8 @@ const initialState: CourseState = {
   error: null,
   fieldErrors: null,
   successMessage: null,
+  filteredCourses: null,
+  filterLoading: false,
 };
 
 const saveProgressToLocalStorage = (
@@ -261,6 +266,38 @@ export const updateLessonProgress = createAsyncThunk<
   }
 });
 
+export const filterCourses = createAsyncThunk<
+  { data: Course[]; message: string },
+  { keyword?: string; degree_id?: number; year_id?: number },
+  { rejectValue: ErrorResponse }
+>("course/filterCourses", async (filters, { rejectWithValue }) => {
+  try {
+    const response = await filterCoursesApi(filters);
+    if (response.status && response.data) {
+      return { data: response.data, message: response.message };
+    } else {
+      return rejectWithValue({
+        message: response.message || "Failed to filter courses",
+        errors: response.errors ?? undefined,
+      });
+    }
+  } catch (error: unknown) {
+    let message = "Failed to filter courses";
+    let errors: Record<string, string[]> | undefined;
+
+    if (error && typeof error === "object" && "response" in error) {
+      const axiosError = error as AxiosError<{
+        message: string;
+        errors?: Record<string, string[]> | null;
+      }>;
+      message = axiosError.response?.data?.message || message;
+      errors = axiosError.response?.data?.errors ?? undefined;
+    }
+
+    return rejectWithValue({ message, errors });
+  }
+});
+
 const courseSlice = createSlice({
   name: "course",
   initialState,
@@ -434,6 +471,20 @@ const courseSlice = createSlice({
       .addCase(updateLessonProgress.rejected, (state, action) => {
         state.progressLoading = false;
         console.error("❌ Progress update failed:", action.payload?.message);
+      })
+      .addCase(filterCourses.pending, (state) => {
+        state.filterLoading = true;
+        state.error = null;
+        state.fieldErrors = null;
+      })
+      .addCase(filterCourses.fulfilled, (state, action) => {
+        state.filterLoading = false;
+        state.filteredCourses = action.payload.data;
+      })
+      .addCase(filterCourses.rejected, (state, action) => {
+        state.filterLoading = false;
+        state.error = action.payload?.message || "Failed to filter courses";
+        state.fieldErrors = action.payload?.errors || null;
       });
   },
 });

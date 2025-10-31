@@ -7,6 +7,8 @@ import {
   LessonProgressResponse,
   BuyCourseRequest,
   BuyCourseResponse,
+  FilterCoursesResponse,
+  CouponValidationResponse,
 } from "@/types";
 
 export const getDashboardHomeApi = () => {
@@ -37,4 +39,21 @@ export const getMyCoursesApi = () => {
   return apiConnection.auth
     .post("/my-courses")
     .then((response) => response as unknown as DashboardHomeResponse);
+};
+
+export const filterCoursesApi = (data: {
+  keyword?: string;
+  degree_id?: number;
+  year_id?: number;
+}) => {
+  return apiConnection.auth
+    .post("/filter", data)
+    .then((response) => response as unknown as FilterCoursesResponse);
+};
+
+// Add to your existing API service file
+export const validateCouponApi = (data: { coupon: string; price: number }) => {
+  return apiConnection.auth
+    .post("/coupon-validation", data)
+    .then((response) => response as unknown as CouponValidationResponse);
 };

@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { buyCourseApi } from "@/services/courseApi";
-import { BuyCourseResponse } from "@/types";
+import { buyCourseApi, validateCouponApi } from "@/services/courseApi";
+import {
+  BuyCourseRequest,
+  BuyCourseResponse,
+  CouponValidationResponse,
+} from "@/types";
+import axios from "axios";
 
 interface CartCourse {
   id: number;
@@ -16,19 +21,30 @@ interface CartCourse {
   addedAt: string;
 }
 
+interface StoredCartData {
+  items: CartCourse[];
+  totalAmount: number;
+  totalItems: number;
+}
+
 interface CartState {
   items: CartCourse[];
   totalAmount: number;
   totalItems: number;
   purchaseLoading: boolean;
   purchaseError: string | null;
+  coupon: {
+    code: string;
+    discount: number;
+    newTotal: number;
+    loading: boolean;
+    error: string | null;
+    validated: boolean;
+    coupon_id?: number;
+  };
 }
 
-// Load cart from localStorage on initialization
-const loadCartFromStorage = (): Omit<
-  CartState,
-  "purchaseLoading" | "purchaseError"
-> => {
+const loadCartFromStorage = (): StoredCartData => {
   if (typeof window !== "undefined") {
     try {
       const savedCart = localStorage.getItem("courseCart");
@@ -46,11 +62,10 @@ const loadCartFromStorage = (): Omit<
   };
 };
 
-// Save cart to localStorage
 const saveCartToStorage = (state: CartState) => {
   if (typeof window !== "undefined") {
     try {
-      const cartData = {
+      const cartData: StoredCartData = {
         items: state.items,
         totalAmount: state.totalAmount,
         totalItems: state.totalItems,
@@ -62,7 +77,56 @@ const saveCartToStorage = (state: CartState) => {
   }
 };
 
-// Async thunk for purchasing courses
+export const validateCoupon = createAsyncThunk<
+  CouponValidationResponse,
+  string,
+  {
+    state: { cart: CartState };
+    rejectValue: string;
+  }
+>("cart/validateCoupon", async (couponCode, { getState, rejectWithValue }) => {
+  try {
+    const { cart } = getState();
+    const response = await validateCouponApi({
+      coupon: couponCode,
+      price: cart.totalAmount,
+    });
+    return response;
+  } catch (error) {
+    console.error("Coupon validation error:", error);
+
+    if (axios.isAxiosError(error)) {
+      const backendMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.detail;
+
+      const status = error.response?.status;
+
+      if (backendMessage) {
+        return rejectWithValue(backendMessage);
+      }
+
+      switch (status) {
+        case 404:
+          return rejectWithValue("שירות לא זמין (404)");
+        case 400:
+          return rejectWithValue("קוד קופון לא תקין (400)");
+        case 500:
+          return rejectWithValue("שגיאת שרת פנימית (500)");
+        default:
+          return rejectWithValue(`שגיאה לא ידועה (${status})`);
+      }
+    }
+
+    if (error instanceof Error) {
+      return rejectWithValue(error.message);
+    }
+
+    return rejectWithValue("אירעה שגיאה בלתי צפויה");
+  }
+});
+
 export const purchaseCourses = createAsyncThunk<
   BuyCourseResponse,
   void,
@@ -79,10 +143,16 @@ export const purchaseCourses = createAsyncThunk<
       return rejectWithValue("No courses in cart");
     }
 
-    const response = await buyCourseApi({
+    const purchaseData: BuyCourseRequest = {
       course_ids: courseIds,
-    });
+      price: cart.coupon.validated ? cart.coupon.newTotal : cart.totalAmount,
+      ...(cart.coupon.validated &&
+        cart.coupon.coupon_id && {
+          coupon_id: cart.coupon.coupon_id,
+        }),
+    };
 
+    const response = await buyCourseApi(purchaseData);
     return response;
   } catch (error) {
     if (error instanceof Error) {
@@ -94,9 +164,19 @@ export const purchaseCourses = createAsyncThunk<
 
 const loadedCart = loadCartFromStorage();
 const initialState: CartState = {
-  ...loadedCart,
+  items: loadedCart.items,
+  totalAmount: loadedCart.totalAmount,
+  totalItems: loadedCart.totalItems,
   purchaseLoading: false,
   purchaseError: null,
+  coupon: {
+    code: "",
+    discount: 0,
+    newTotal: loadedCart.totalAmount,
+    loading: false,
+    error: null,
+    validated: false,
+  },
 };
 
 const cartSlice = createSlice({
@@ -116,6 +196,15 @@ const cartSlice = createSlice({
         state.totalItems += 1;
         state.totalAmount += action.payload.price;
 
+        state.coupon = {
+          code: "",
+          discount: 0,
+          newTotal: state.totalAmount,
+          loading: false,
+          error: null,
+          validated: false,
+        };
+
         saveCartToStorage(state);
       }
     },
@@ -131,6 +220,15 @@ const cartSlice = createSlice({
         state.totalItems -= 1;
         state.items.splice(itemIndex, 1);
 
+        state.coupon = {
+          code: "",
+          discount: 0,
+          newTotal: state.totalAmount,
+          loading: false,
+          error: null,
+          validated: false,
+        };
+
         saveCartToStorage(state);
       }
     },
@@ -139,6 +237,14 @@ const cartSlice = createSlice({
       state.items = [];
       state.totalAmount = 0;
       state.totalItems = 0;
+      state.coupon = {
+        code: "",
+        discount: 0,
+        newTotal: 0,
+        loading: false,
+        error: null,
+        validated: false,
+      };
 
       saveCartToStorage(state);
     },
@@ -148,14 +254,63 @@ const cartSlice = createSlice({
       state.items = loadedCart.items;
       state.totalAmount = loadedCart.totalAmount;
       state.totalItems = loadedCart.totalItems;
+      state.coupon.newTotal = loadedCart.totalAmount;
     },
 
     clearPurchaseError: (state) => {
       state.purchaseError = null;
     },
+
+    removeCoupon: (state) => {
+      state.coupon = {
+        code: "",
+        discount: 0,
+        newTotal: state.totalAmount,
+        loading: false,
+        error: null,
+        validated: false,
+        coupon_id: undefined,
+      };
+    },
+
+    clearCouponError: (state) => {
+      state.coupon.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
+
+      .addCase(validateCoupon.pending, (state) => {
+        state.coupon.loading = true;
+        state.coupon.error = null;
+      })
+      .addCase(validateCoupon.fulfilled, (state, action) => {
+        state.coupon.loading = false;
+
+        if (action.payload.status && action.payload.data) {
+          state.coupon.validated = true;
+          state.coupon.discount = action.payload.data.discount;
+          state.coupon.newTotal = action.payload.data.new_price;
+          state.coupon.code = action.meta.arg;
+          state.coupon.coupon_id = action.payload.data.coupon_id;
+          state.coupon.error = null;
+        } else {
+          state.coupon.validated = false;
+          state.coupon.error = action.payload.message;
+          state.coupon.discount = 0;
+          state.coupon.newTotal = state.totalAmount;
+          state.coupon.coupon_id = undefined;
+        }
+      })
+      .addCase(validateCoupon.rejected, (state, action) => {
+        state.coupon.loading = false;
+        state.coupon.validated = false;
+        state.coupon.error =
+          action.payload ?? "An error occurred during coupon validation";
+        state.coupon.discount = 0;
+        state.coupon.newTotal = state.totalAmount;
+      })
+
       .addCase(purchaseCourses.pending, (state) => {
         state.purchaseLoading = true;
         state.purchaseError = null;
@@ -163,11 +318,18 @@ const cartSlice = createSlice({
       .addCase(purchaseCourses.fulfilled, (state, action) => {
         state.purchaseLoading = false;
 
-        // Clear cart on successful purchase
         if (action.payload.status) {
           state.items = [];
           state.totalAmount = 0;
           state.totalItems = 0;
+          state.coupon = {
+            code: "",
+            discount: 0,
+            newTotal: 0,
+            loading: false,
+            error: null,
+            validated: false,
+          };
           saveCartToStorage(state);
         }
       })
@@ -185,6 +347,8 @@ export const {
   clearCart,
   updateCartFromStorage,
   clearPurchaseError,
+  removeCoupon,
+  clearCouponError,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

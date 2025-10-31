@@ -16,6 +16,8 @@ interface FormInputFieldProps {
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   className?: string;
+  disabled?: boolean; // Add this line
+  value?: string; // Also add value prop for better form control
 }
 
 const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
@@ -31,6 +33,8 @@ const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
       onBlur,
       onChange,
       className,
+      disabled = false, // Add default value
+      value, // Add value prop
     },
     ref
   ) => {
@@ -45,14 +49,16 @@ const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
 
     return (
       <div>
-        <Label
-          htmlFor={id}
-          className={`mb-2.5 leading-5 font-medium text-sm block ${
-            isRTL ? "text-right" : ""
-          }`}
-        >
-          {label}
-        </Label>
+        {label && (
+          <Label
+            htmlFor={id}
+            className={`mb-2.5 leading-5 font-medium text-sm block ${
+              isRTL ? "text-right" : ""
+            }`}
+          >
+            {label}
+          </Label>
+        )}
 
         <div className="relative">
           <Input
@@ -64,6 +70,8 @@ const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
             onChange={onChange}
             onBlur={handleBlur}
             onFocus={() => setIsFocused(true)}
+            disabled={disabled} // Pass disabled prop
+            value={value} // Pass value prop
             style={{
               caretColor: isFocused ? "#D4AF37" : "#9ca3af",
             }}
@@ -76,13 +84,14 @@ const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
                   : "border-soft-gray"
               }
               ${error ? "border-red-500" : ""}
+              ${disabled ? "bg-gray-100 cursor-not-allowed opacity-50" : ""}
               placeholder-silver-gray
               text-gray-900
               focus:!outline-none focus:!ring-0
               ${isPassword && isRTL ? "pr-12" : ""}
               ${isPassword && !isRTL ? "pl-12" : ""}
               ${isRTL ? "text-right" : ""}
-              ${className || ""}  // <-- merge parent classes
+              ${className || ""}
             `}
           />
 
@@ -90,9 +99,12 @@ const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={disabled} // Also disable the button when input is disabled
               className={`absolute top-1/2 -translate-y-1/2 ${
                 isRTL ? "right-3" : "left-3"
-              } text-charcoal-blue hover:text-gray-700 transition-colors focus:outline-none`}
+              } text-charcoal-blue hover:text-gray-700 transition-colors focus:outline-none ${
+                disabled ? "cursor-not-allowed opacity-50" : ""
+              }`}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
