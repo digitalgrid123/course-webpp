@@ -173,12 +173,19 @@ export default function LoginPage() {
               />
               <p className="text-sm text-gray-500 text-right leading-4 font-medium">
                 בהתחברות למערכת הינך מאשר את{" "}
-                <Link href="/terms" className="text-amber-gold underline">
+                <Link
+                  href="https://google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-gold underline"
+                >
                   התקנון
                 </Link>{" "}
                 וגם את{" "}
                 <Link
-                  href="/privacy-policy"
+                  href="https://google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-amber-gold underline"
                 >
                   מדיניות הפרטיות
