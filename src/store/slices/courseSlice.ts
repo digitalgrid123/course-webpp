@@ -65,6 +65,7 @@ const saveProgressToLocalStorage = (
       lessonId,
     };
     localStorage.setItem(key, JSON.stringify(data));
+    console.log(`✅ Saved to localStorage: ${key} = ${progress}%`);
   } catch (error) {
     console.error("Failed to save progress to localStorage:", error);
   }
@@ -80,7 +81,12 @@ const getProgressFromLocalStorage = (
 
     if (data) {
       const parsed = JSON.parse(data);
+      console.log(
+        `📖 Retrieved from localStorage: ${key} = ${parsed.progress}%`
+      );
       return parsed.progress;
+    } else {
+      console.log(`📖 No localStorage data for: ${key}`);
     }
   } catch (error) {
     console.error("Failed to get progress from localStorage:", error);
@@ -163,22 +169,28 @@ export const fetchCourseDetail = createAsyncThunk<
   try {
     const response = await getCourseDetailApi(request);
     if (response.status && response.data) {
-      if (response.data.modules.length > 0) {
-        response.data.modules.forEach((module) => {
-          module.lessons.forEach((lesson) => {
-            const localProgress = getProgressFromLocalStorage(
-              response.data.id,
-              lesson.id
-            );
-            const serverProgress = lesson.watched_progress || 0;
-            const maxProgress = Math.max(serverProgress, localProgress || 0);
+      // FIXED: Merge localStorage progress with server progress
+      response.data.modules.forEach((module) => {
+        module.lessons.forEach((lesson) => {
+          const localProgress = getProgressFromLocalStorage(
+            response.data.id,
+            lesson.id
+          );
 
-            if (maxProgress > serverProgress) {
-              lesson.watched_progress = maxProgress;
-            }
-          });
+          // Use the MAXIMUM of server progress and local progress
+          const serverProgress = lesson.watched_progress || 0;
+          const maxProgress = Math.max(serverProgress, localProgress || 0);
+
+          // Only update if local progress is higher
+          if (maxProgress > serverProgress) {
+            lesson.watched_progress = maxProgress;
+            console.log(
+              `🔄 Updated lesson ${lesson.id} progress: ${serverProgress}% → ${maxProgress}%`
+            );
+          }
         });
-      }
+      });
+
       return { data: response.data, message: response.message };
     } else {
       return rejectWithValue({
@@ -218,6 +230,7 @@ export const updateLessonProgress = createAsyncThunk<
     const { courseId, ...apiRequest } = request;
     const response = await updateLessonProgressApi(apiRequest);
     if (response.status) {
+      // Save to localStorage regardless of API response
       saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
 
       return {
@@ -228,6 +241,7 @@ export const updateLessonProgress = createAsyncThunk<
         courseId: courseId,
       };
     } else {
+      // Even if API fails, save to localStorage
       saveProgressToLocalStorage(courseId, request.lesson_id, request.progress);
 
       return rejectWithValue({
@@ -302,6 +316,7 @@ const courseSlice = createSlice({
     clearMyCourses: (state) => {
       state.myCourses = null;
     },
+
     updateLocalProgress: (
       state,
       action: {
@@ -311,21 +326,17 @@ const courseSlice = createSlice({
       if (!state.courseDetail) return;
 
       const { lessonId, progress, courseId } = action.payload;
-      const { modules } = state.courseDetail;
-
-      if (modules.length === 0) {
-        state.courseDetail.course_watched_percentage = 0;
-        return;
-      }
 
       saveProgressToLocalStorage(courseId, lessonId, progress);
 
-      for (const courseModule of modules) {
+      // Update Redux state
+      for (const courseModule of state.courseDetail.modules) {
         const lesson = courseModule.lessons.find((l) => l.id === lessonId);
         if (lesson) {
           if (progress > (lesson.watched_progress || 0)) {
             lesson.watched_progress = progress;
 
+            // Recalculate module progress
             const totalLessons = courseModule.lessons.length;
             const totalProgress = courseModule.lessons.reduce(
               (sum, l) => sum + (l.watched_progress || 0),
@@ -334,7 +345,10 @@ const courseSlice = createSlice({
             courseModule.module_watched_percentage =
               totalLessons > 0 ? Math.round(totalProgress / totalLessons) : 0;
 
-            const allLessons = modules.flatMap((m) => m.lessons);
+            // Recalculate course progress
+            const allLessons = state.courseDetail.modules.flatMap(
+              (m) => m.lessons
+            );
             const allLessonsCount = allLessons.length;
             const allLessonsProgress = allLessons.reduce(
               (sum, l) => sum + (l.watched_progress || 0),
@@ -345,6 +359,7 @@ const courseSlice = createSlice({
                 ? Math.round((allLessonsProgress / allLessonsCount) * 100) / 100
                 : 0;
           }
+
           break;
         }
       }
@@ -352,6 +367,7 @@ const courseSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
       .addCase(fetchDashboardHome.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -369,6 +385,7 @@ const courseSlice = createSlice({
           action.payload?.message || "Failed to fetch dashboard data";
         state.fieldErrors = action.payload?.errors || null;
       })
+
       .addCase(fetchMyCourses.pending, (state) => {
         state.myCoursesLoading = true;
         state.error = null;
@@ -383,6 +400,7 @@ const courseSlice = createSlice({
         state.error = action.payload?.message || "Failed to fetch my courses";
         state.fieldErrors = action.payload?.errors || null;
       })
+
       .addCase(fetchCourseDetail.pending, (state) => {
         state.detailLoading = true;
         state.error = null;
@@ -393,10 +411,6 @@ const courseSlice = createSlice({
         state.detailLoading = false;
         state.courseDetail = action.payload.data;
         state.successMessage = action.payload.message;
-
-        if (state.courseDetail && state.courseDetail.modules.length === 0) {
-          state.courseDetail.course_watched_percentage = 0;
-        }
       })
       .addCase(fetchCourseDetail.rejected, (state, action) => {
         state.detailLoading = false;
@@ -404,27 +418,25 @@ const courseSlice = createSlice({
           action.payload?.message || "Failed to fetch course details";
         state.fieldErrors = action.payload?.errors || null;
       })
+
       .addCase(updateLessonProgress.pending, (state) => {
         state.progressLoading = true;
       })
       .addCase(updateLessonProgress.fulfilled, (state, action) => {
         state.progressLoading = false;
+        console.log("✅ Progress updated:", action.payload.message);
 
         if (state.courseDetail) {
           const { lessonId, progress } = action.payload;
-          const { modules } = state.courseDetail;
 
-          if (modules.length === 0) {
-            state.courseDetail.course_watched_percentage = 0;
-            return;
-          }
-
-          for (const courseModule of modules) {
+          for (const courseModule of state.courseDetail.modules) {
             const lesson = courseModule.lessons.find((l) => l.id === lessonId);
             if (lesson) {
+              // FIXED: Only update if new progress is higher
               if (progress > (lesson.watched_progress || 0)) {
                 lesson.watched_progress = progress;
 
+                // Recalculate module progress
                 const totalLessons = courseModule.lessons.length;
                 const totalProgress = courseModule.lessons.reduce(
                   (sum, l) => sum + (l.watched_progress || 0),
@@ -435,7 +447,10 @@ const courseSlice = createSlice({
                     ? Math.round(totalProgress / totalLessons)
                     : 0;
 
-                const allLessons = modules.flatMap((m) => m.lessons);
+                // Recalculate course progress
+                const allLessons = state.courseDetail.modules.flatMap(
+                  (m) => m.lessons
+                );
                 const allLessonsCount = allLessons.length;
                 const allLessonsProgress = allLessons.reduce(
                   (sum, l) => sum + (l.watched_progress || 0),
@@ -447,13 +462,15 @@ const courseSlice = createSlice({
                       100
                     : 0;
               }
+
               break;
             }
           }
         }
       })
-      .addCase(updateLessonProgress.rejected, (state) => {
+      .addCase(updateLessonProgress.rejected, (state, action) => {
         state.progressLoading = false;
+        console.error("❌ Progress update failed:", action.payload?.message);
       })
       .addCase(filterCourses.pending, (state) => {
         state.filterLoading = true;

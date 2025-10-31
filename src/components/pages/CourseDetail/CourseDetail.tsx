@@ -567,23 +567,34 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold">התקדמות כוללת</span>
                     <span className="text-lg font-bold">
-                      {Math.round(
-                        courseDetail.modules.reduce((total, module) => {
-                          const moduleProgress = module.lessons.reduce(
-                            (sum, lesson) =>
-                              sum + (lesson.watched_progress || 0),
-                            0
-                          );
-                          return total + moduleProgress;
-                        }, 0) /
-                          courseDetail.modules.reduce(
-                            (total, module) => total + module.lessons.length,
-                            0
-                          )
-                      )}
-                      %
+                      {(() => {
+                        const totalLessons = courseDetail?.modules?.reduce(
+                          (total, module) =>
+                            total + (module?.lessons?.length || 0),
+                          0
+                        );
+                        const totalProgress = courseDetail?.modules?.reduce(
+                          (total, module) => {
+                            const moduleProgress = module?.lessons?.reduce(
+                              (sum, lesson) =>
+                                sum + (Number(lesson?.watched_progress) || 0),
+                              0
+                            );
+                            return total + moduleProgress;
+                          },
+                          0
+                        );
+
+                        const percentage =
+                          totalLessons && totalLessons > 0
+                            ? Math.round((totalProgress / totalLessons) * 100)
+                            : 0;
+
+                        return `${percentage}%`;
+                      })()}
                     </span>
                   </div>
+
                   <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden">
                     <div
                       className="bg-white h-full rounded-full transition-all duration-500"
