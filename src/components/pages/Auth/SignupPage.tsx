@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import { Form } from "@/components/ui/form";
 import SubmitButton from "@/components/common/Button/SubmitButton";
 import FormInputField from "@/components/common/Form/FormInput";
+import ProfileImageUpload from "@/components/common/Form/ProfileImageUpload";
 import { AppDispatch, RootState } from "@/store";
 import { clearAuthErrors, registerUser } from "@/store/slices/authSlice";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ interface SignupFormValues {
   email: string;
   password: string;
   password_confirmation: string;
+  profile_image?: string;
 }
 
 export default function SignupPage() {
@@ -53,6 +55,7 @@ export default function SignupPage() {
       email: "",
       password: "",
       password_confirmation: "",
+      profile_image: "",
     },
     mode: "onTouched",
   });
@@ -60,6 +63,7 @@ export default function SignupPage() {
   const {
     handleSubmit,
     register,
+    setValue,
     setError,
     reset,
     formState: { errors, isValid, isSubmitting },
@@ -98,6 +102,7 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     dispatch(clearAuthErrors());
+
     localStorage.setItem("signupFormData", JSON.stringify(values));
     const resultAction = await dispatch(registerUser(values));
 
@@ -122,7 +127,7 @@ export default function SignupPage() {
               <span>{t("alreadyHaveAccountPrefix")}</span>{" "}
               <Link
                 href="/login"
-                className="text-amber-gold font-semibold underline"
+                className="text-amber-gold font-medium underline"
               >
                 {t("alreadyHaveAccountAction")}
               </Link>
@@ -131,6 +136,11 @@ export default function SignupPage() {
 
           <Form {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <ProfileImageUpload
+                initialImage={form.getValues("profile_image")}
+                onUploadComplete={(url) => setValue("profile_image", url)}
+              />
+
               <FormInputField
                 id="first_name"
                 type="text"
@@ -186,27 +196,6 @@ export default function SignupPage() {
                 isValid={isValid}
                 label={t("signUp")}
               />
-              <p className="text-sm text-gray-500 text-right leading-4 font-medium">
-                בהתחברות למערכת הינך מאשר את{" "}
-                <Link
-                  href="https://google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-gold underline"
-                >
-                  התקנון
-                </Link>{" "}
-                וגם את{" "}
-                <Link
-                  href="https://google.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-amber-gold underline"
-                >
-                  מדיניות הפרטיות
-                </Link>
-                .
-              </p>
             </form>
           </Form>
         </div>
