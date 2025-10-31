@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, LogOut, Menu, X } from "lucide-react";
+import { Settings, LogOut, Menu, X, LogOutIcon } from "lucide-react";
 import Image from "next/image";
 import { SearchIcon, CartIcon, LearningIcon } from "@/lib/CustomIcons";
 import { useTranslations } from "next-intl";
@@ -142,21 +142,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
       >
-        <h2 className="text-lg font-semibold mb-4">{t("confirmLogout")}</h2>
-        <p className="mb-6">{t("areYouSureLogout")}</p>
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={() => setIsLogoutModalOpen(false)}
-            className="px-4 py-2 rounded-lg bg-gray-200"
-          >
-            {t("cancel")}
-          </button>
-          <button
-            onClick={confirmLogout}
-            className="px-4 py-2 rounded-lg bg-amber-gold text-white"
-          >
-            {t("logout")}
-          </button>
+        <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-lg font-semibold">{t("confirmLogout")}</h2>
+          </div>
+
+          <p className="mb-6 text-gray-700">{t("areYouSureLogout")}</p>
+
+          <div className="flex justify-end gap-3 w-full">
+            <button
+              onClick={() => setIsLogoutModalOpen(false)}
+              className="px-4 py-2 rounded-lg bg-gray-200"
+            >
+              {t("cancel")}
+            </button>
+            <button
+              onClick={confirmLogout}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-gold text-white"
+            >
+              <LogOutIcon className="w-5 h-5" />
+              {t("logout")}
+            </button>
+          </div>
         </div>
       </Modal>
     </>
