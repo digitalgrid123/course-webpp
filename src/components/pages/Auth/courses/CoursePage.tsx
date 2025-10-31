@@ -316,7 +316,7 @@ export default function CoursesPage() {
           </div>
         </div>
 
-        <div className="flex gap-1 lg:col-span-2 justify-end">
+        <div className="flex gap-1 lg:col-span-2 lg:justify-end justify-center">
           <div className="relative" ref={degreeDropdownRef}>
             <button
               className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl   transition-colors min-w-[160px]"
