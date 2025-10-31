@@ -336,7 +336,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
           <div className="absolute inset-0 z-10">
             <Image
               src={getFullUrl(thumbnail)}
-              alt="Video thumbnail"
+              alt="תמונת מפתח לסרטון"
               fill
               style={{ objectFit: "cover" }}
               className="rounded-4xl"
@@ -356,7 +356,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
               </button>
               {initialProgress > 0 && (
                 <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm">
-                  Resume from {initialProgress}%
+                  {`המשך מ-${initialProgress}%`}
                 </div>
               )}
             </div>
@@ -441,7 +441,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                           >
                             <div className="px-4 py-2 border-b border-gray-700">
                               <p className="text-xs font-semibold text-gray-400">
-                                Playback Speed
+                                מהירות ניגון
                               </p>
                             </div>
                             <div className="py-1">
@@ -457,7 +457,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
                                     }`}
                                   >
                                     <span>
-                                      {speed === 1 ? "Normal" : `${speed}x`}
+                                      {speed === 1 ? "רגיל" : `${speed}x`}
                                     </span>
                                     {playbackRate === speed && (
                                       <svg
