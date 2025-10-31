@@ -117,7 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       <button
         onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 bg-orange-500 text-white p-2 rounded-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-amber-gold text-white p-2 rounded-lg"
       >
         {isMobileOpen ? (
           <X className="w-6 h-6" />
@@ -127,7 +127,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </button>
       {isMobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="lg:hidden fixed inset-0 bg-transparent backdrop-blur-sm z-30"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
