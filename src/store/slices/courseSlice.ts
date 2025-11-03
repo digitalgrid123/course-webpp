@@ -29,6 +29,7 @@ interface CourseState {
   successMessage: string | null;
   filteredCourses: Course[] | null;
   filterLoading: boolean;
+  errorType?: "general" | "filter" | null; // Add this
 }
 
 interface ErrorResponse {
@@ -49,6 +50,7 @@ const initialState: CourseState = {
   successMessage: null,
   filteredCourses: null,
   filterLoading: false,
+  errorType: null,
 };
 
 const saveProgressToLocalStorage = (
@@ -273,8 +275,12 @@ export const filterCourses = createAsyncThunk<
 >("course/filterCourses", async (filters, { rejectWithValue }) => {
   try {
     const response = await filterCoursesApi(filters);
-    if (response.status && response.data) {
-      return { data: response.data, message: response.message };
+    if (response.status) {
+      // Return empty array instead of rejecting when no courses found
+      return {
+        data: response.data || [],
+        message: response.message || "Filter applied successfully",
+      };
     } else {
       return rejectWithValue({
         message: response.message || "Failed to filter courses",
@@ -383,6 +389,7 @@ const courseSlice = createSlice({
         state.loading = false;
         state.error =
           action.payload?.message || "Failed to fetch dashboard data";
+        state.errorType = "general";
         state.fieldErrors = action.payload?.errors || null;
       })
 
@@ -484,6 +491,7 @@ const courseSlice = createSlice({
       .addCase(filterCourses.rejected, (state, action) => {
         state.filterLoading = false;
         state.error = action.payload?.message || "Failed to filter courses";
+        state.errorType = "filter"; // Set error type
         state.fieldErrors = action.payload?.errors || null;
       });
   },

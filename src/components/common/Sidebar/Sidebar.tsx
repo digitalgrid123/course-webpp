@@ -43,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleSettingsClick = () => {
-    if (onItemClick) onItemClick("settings"); // Trigger navigation via ClientLayout
+    if (onItemClick) onItemClick("settings");
     setIsMobileOpen(false);
   };
 

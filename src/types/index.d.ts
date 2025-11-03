@@ -5,7 +5,6 @@ export interface CustomAxiosResponse<T = unknown> {
   errors?: Record<string, string[]>;
 }
 
-// Login Types
 export interface LoginCredentials {
   email: string;
   password: string;
@@ -33,7 +32,6 @@ export interface LoginResponse {
   errors: Record<string, string[]> | null;
 }
 
-// Registration Types
 export interface RegisterCredentials {
   email: string;
   password: string;
@@ -75,7 +73,6 @@ export interface RegisterResponse {
   errors: Record<string, string[]> | null;
 }
 
-// OTP Types
 export interface SendOtpCredentials {
   email: string;
 }
@@ -99,7 +96,6 @@ export interface VerifyOtpResponse {
   errors?: Record<string, string[]>;
 }
 
-// Degree and Year Types
 export interface YearPivot {
   degree_id: number;
   year_id: number;
@@ -140,7 +136,6 @@ export interface DegreeYearsResponse {
   errors?: Record<string, string[]>;
 }
 
-// Course related types
 export interface Teacher {
   id: number;
   name: string;
@@ -150,11 +145,10 @@ export interface Teacher {
   courses_count: number;
 }
 
-// Material types
 export interface Material {
   id: number;
   lesson_id: number;
-  file_type: number; // 1 = PDF, 2 = Link, 3 = Document
+  file_type: number;
   file: string;
   title: string;
   created_at: string;
@@ -164,7 +158,7 @@ export interface Material {
 export interface Lesson {
   id: number;
   module_id: number;
-  type: number; // 1 = regular, 2 = video
+  type: number;
   name: string;
   video: string | null;
   thumbnail: string | null;
@@ -322,7 +316,6 @@ export interface FilterCoursesResponse {
   errors: Record<string, string[]> | null;
 }
 
-// Add to your existing types
 export interface CouponValidationRequest {
   coupon: string;
   price: number;
