@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "../common/Sidebar/Sidebar";
 
@@ -35,7 +36,9 @@ export default function ClientLayout({
   return (
     <div className="flex h-screen bg-gray-50" dir="rtl">
       <Sidebar activeItem={getActiveItem()} onItemClick={handleNavigate} />
-      <main className="flex-1 lg:mr-0 overflow-auto h-full">{children}</main>
+      <main className="flex-1 lg:mr-0 overflow-auto h-full">
+        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+      </main>
     </div>
   );
 }
