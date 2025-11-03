@@ -153,12 +153,9 @@ const Settings = ({ isRTL = true }: SettingsProps) => {
 
           <div className="space-y-4 sm:space-y-5 lg:space-y-6">
             <div className="bg-white rounded-20 p-5 sm:p-6 lg:p-7 shadow-soft-dark">
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-charcoal-blue mb-0.5 text-right">
+              <h2 className="text-base sm:text-lg lg:text-xl font-bold text-charcoal-blue text-right mb-5 sm:mb-6">
                 {isRTL ? "הגדרות סיסמא" : "Password Settings"}
               </h2>
-              <p className="text-xs sm:text-sm text-stone-gray mb-5 sm:mb-6 text-right">
-                {isRTL ? "סיסמא נוכחית" : "Current password"}
-              </p>
 
               <Form {...passwordForm}>
                 <form
@@ -169,7 +166,7 @@ const Settings = ({ isRTL = true }: SettingsProps) => {
                     id="current_password"
                     type="password"
                     label=""
-                    placeholder="Placeholder"
+                    placeholder="סיסמא נוכחית"
                     {...passwordForm.register("current_password")}
                     error={
                       passwordForm.formState.errors.current_password?.message

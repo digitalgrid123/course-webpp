@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { CourseCard } from "@/components/common/CourseCard/CourseCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PaymentModal } from "@/components/common/PaymentModal/PaymentModal";
 import Image from "next/image";
 import { Formik, Form, Field, FieldProps } from "formik";
 import FormInputField from "@/components/common/Form/FormInput";
@@ -26,6 +27,7 @@ interface CouponFormValues {
 export default function Cart() {
   const dispatch = useDispatch<AppDispatch>();
   const cart = useSelector((state: RootState) => state.cart);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(updateCartFromStorage());
@@ -69,17 +71,21 @@ export default function Cart() {
     }
   };
 
-  const handlePurchase = async () => {
+  const handleOpenPaymentModal = () => {
     if (cart.totalItems === 0) {
       toast.error("אין קורסים בסל", {});
       return;
     }
+    setIsPaymentModalOpen(true);
+  };
 
+  const handlePaymentSuccess = async () => {
     try {
       const result = await dispatch(purchaseCourses()).unwrap();
 
       if (result.status) {
         toast.success(result.message || "הרכישה בוצעה בהצלחה!", {});
+        setIsPaymentModalOpen(false);
 
         if (result.data && result.data.skipped_courses.length > 0) {
           toast(
@@ -259,7 +265,7 @@ export default function Cart() {
 
                         <Button
                           type="button"
-                          onClick={handlePurchase}
+                          onClick={handleOpenPaymentModal}
                           className="bg-black hover:bg-black/90 text-white w-full py-3 rounded-md text-sm font-medium"
                           disabled={cart.purchaseLoading}
                         >
@@ -276,6 +282,14 @@ export default function Cart() {
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onPaymentSuccess={handlePaymentSuccess}
+        isLoading={cart.purchaseLoading}
+      />
     </div>
   );
 }

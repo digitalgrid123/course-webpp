@@ -667,7 +667,6 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                               שיעורים:
                             </p>
                             <div className="space-y-2 relative">
-                              <div className="absolute right-3.5 top-0 bottom-0 w-0.5 bg-white/30"></div>
                               <div
                                 className="absolute right-3.5 top-0 w-0.5 bg-green-400 transition-all duration-500"
                                 style={{

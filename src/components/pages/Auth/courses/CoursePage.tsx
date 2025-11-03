@@ -31,6 +31,7 @@ export default function CoursesPage() {
     error,
     filteredCourses: apiFilteredCourses,
     filterLoading,
+    errorType,
   } = useSelector((state: RootState) => state.course);
 
   const { degrees, loading: degreesLoading } = useSelector(
@@ -75,9 +76,10 @@ export default function CoursesPage() {
   }, []);
 
   useEffect(() => {
-    if (error) toast.error(`Error: ${error}`);
-  }, [error]);
-
+    if (error && errorType !== "filter") {
+      toast.error(`Error: ${error}`);
+    }
+  }, [error, errorType]);
   const hasValidFiltersForAPI = useCallback(() => {
     const hasKeyword = searchInput.trim() !== "";
     const hasDegree = selectedDegree !== "כל התארים";

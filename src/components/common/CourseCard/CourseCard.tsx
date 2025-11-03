@@ -38,7 +38,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       onClick={handleClick}
       className={`bg-white rounded-20 p-3 overflow-hidden shadow-orange-soft transition-shadow cursor-pointer hover:shadow-lg ${className}`}
     >
-      <div className="relative h-28 w-full rounded-20 overflow-hidden">
+      <div className="relative h-40 w-full rounded-20 overflow-hidden">
         {image ? (
           <Image
             src={getFullUrl(image)}
@@ -59,7 +59,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({
         <h3 className="font-bold text-gray-800 mb-2">{title}</h3>
         <p className="text-sm font-medium text-gray-900 mb-1">{instructor}</p>
         {level && <p className="text-sm text-gray-600 font-bold">{level}</p>}
-        {price && <p className="text-sm text-gray-600 font-bold">₪{price}</p>}
+        {price && (
+          <p className="text-sm text-gray-600 font-semibold">{price}₪</p>
+        )}
       </div>
     </div>
   );

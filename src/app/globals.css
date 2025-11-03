@@ -24,6 +24,9 @@
   --color-gray-500: #969799;
   --color-gray-200: #ebebef;
   --color-gray-400: #818183;
+  --color-blue-gray: #0a0d13;
+  --color-dark-blue: #172348;
+  --color-gray-500: #acacac;
 
   /* Shadows */
   --shadow-glow-amber: 0 0 12px 6px rgba(255, 165, 0, 0.4);
