@@ -20,10 +20,13 @@ import { filterCourses } from "@/store/slices/courseSlice";
 import { Course, DegreeYear } from "@/types";
 import toast from "react-hot-toast";
 import { SkeletonGrid } from "@/components/common/SkeletonGrid/SkeletonGrid";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function CoursesPage() {
   const t = useTranslations("Courses");
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const {
     userProfile,
@@ -38,9 +41,16 @@ export default function CoursesPage() {
     (state: RootState) => state.degreeYears
   );
 
-  const [searchInput, setSearchInput] = useState("");
-  const [selectedDegree, setSelectedDegree] = useState("כל התארים");
-  const [selectedYear, setSelectedYear] = useState("כל השנים");
+  // Initialize state from URL parameters
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") || ""
+  );
+  const [selectedDegree, setSelectedDegree] = useState(
+    searchParams.get("degree") || "כל התארים"
+  );
+  const [selectedYear, setSelectedYear] = useState(
+    searchParams.get("year") || "כל השנים"
+  );
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
   const [degreeSearch, setDegreeSearch] = useState("");
@@ -48,8 +58,22 @@ export default function CoursesPage() {
 
   const degreeDropdownRef = useRef<HTMLDivElement>(null);
   const yearDropdownRef = useRef<HTMLDivElement>(null);
-
   const searchTimeoutRef = useRef<number | null>(null);
+
+  // Update URL when filters change
+  const updateURL = useCallback(
+    (search: string, degree: string, year: string) => {
+      const params = new URLSearchParams();
+
+      if (search && search !== "") params.set("search", search);
+      if (degree && degree !== "כל התארים") params.set("degree", degree);
+      if (year && year !== "כל השנים") params.set("year", year);
+
+      const newUrl = params.toString() ? `?${params.toString()}` : "";
+      router.replace(`/dashboard${newUrl}`, { scroll: false });
+    },
+    [router]
+  );
 
   useEffect(() => {
     dispatch(fetchDashboardHome());
@@ -80,6 +104,7 @@ export default function CoursesPage() {
       toast.error(`Error: ${error}`);
     }
   }, [error, errorType]);
+
   const hasValidFiltersForAPI = useCallback(() => {
     const hasKeyword = searchInput.trim() !== "";
     const hasDegree = selectedDegree !== "כל התארים";
@@ -89,6 +114,9 @@ export default function CoursesPage() {
   }, [searchInput, selectedDegree, selectedYear]);
 
   const handleFilter = useCallback(() => {
+    // Update URL first
+    updateURL(searchInput, selectedDegree, selectedYear);
+
     if (!hasValidFiltersForAPI()) {
       return;
     }
@@ -147,6 +175,7 @@ export default function CoursesPage() {
     degrees,
     dispatch,
     hasValidFiltersForAPI,
+    updateURL,
   ]);
 
   useEffect(() => {
@@ -166,6 +195,7 @@ export default function CoursesPage() {
     };
   }, [handleFilter]);
 
+  // Rest of your component remains the same...
   const availableDegrees = useMemo(() => {
     if (!degrees) return ["כל התארים"];
     const degreeNames = degrees.map((degree) => degree.name);
@@ -287,6 +317,9 @@ export default function CoursesPage() {
 
   const handleClearSearch = () => {
     setSearchInput("");
+    setSelectedDegree("כל התארים");
+    setSelectedYear("כל השנים");
+    updateURL("", "כל התארים", "כל השנים");
   };
 
   const isLoading = loading || filterLoading;
