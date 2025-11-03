@@ -167,13 +167,47 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   const handleModuleClick = (moduleId: number) => {
     const moduleIndex =
       courseDetail?.modules.findIndex((m) => m.id === moduleId) || 0;
+    const selectedModuleData = courseDetail?.modules.find(
+      (m) => m.id === moduleId
+    );
 
     if (courseDetail?.is_my_course === 0 && moduleIndex > 0) {
       toast.error("יש לרכוש את הקורס כדי לגשת למודולים נוספים");
       return;
     }
 
-    setSelectedModule(selectedModule === moduleId ? null : moduleId);
+    // If clicking the same module, toggle it closed
+    if (selectedModule === moduleId) {
+      setSelectedModule(null);
+      return;
+    }
+
+    // Set the selected module
+    setSelectedModule(moduleId);
+
+    // Auto-select first lesson if module has lessons and is_course is 1
+    if (
+      selectedModuleData &&
+      selectedModuleData.lessons &&
+      selectedModuleData.lessons.length > 0 &&
+      courseDetail?.is_my_course === 1
+    ) {
+      const firstLesson = selectedModuleData.lessons[0];
+
+      // Save progress for current lesson before switching
+      if (selectedLesson && currentProgress > initialProgress) {
+        sendProgressUpdate(selectedLesson, currentProgress);
+      }
+
+      setSelectedLesson(firstLesson.id);
+
+      const savedProgress = firstLesson.watched_progress || 0;
+      setCurrentProgress(savedProgress);
+      setInitialProgress(savedProgress);
+      setLastProgressUpdate(savedProgress);
+
+      hasInitializedProgress.current = false;
+    }
   };
 
   const handleLessonClick = (
