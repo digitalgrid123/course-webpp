@@ -41,15 +41,15 @@ export default function CoursesPage() {
     (state: RootState) => state.degreeYears
   );
 
-  // Initialize state from URL parameters
+  // Initialize state from URL parameters - default to empty (showing user's courses)
   const [searchInput, setSearchInput] = useState(
     searchParams.get("search") || ""
   );
   const [selectedDegree, setSelectedDegree] = useState(
-    searchParams.get("degree") || "כל התארים"
+    searchParams.get("degree") || ""
   );
   const [selectedYear, setSelectedYear] = useState(
-    searchParams.get("year") || "כל השנים"
+    searchParams.get("year") || ""
   );
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
@@ -66,8 +66,8 @@ export default function CoursesPage() {
       const params = new URLSearchParams();
 
       if (search && search !== "") params.set("search", search);
-      if (degree && degree !== "כל התארים") params.set("degree", degree);
-      if (year && year !== "כל השנים") params.set("year", year);
+      if (degree && degree !== "") params.set("degree", degree);
+      if (year && year !== "") params.set("year", year);
 
       const newUrl = params.toString() ? `?${params.toString()}` : "";
       router.replace(`/dashboard${newUrl}`, { scroll: false });
@@ -105,18 +105,20 @@ export default function CoursesPage() {
     }
   }, [error, errorType]);
 
+  // Check if filters are applied (not showing default user courses)
   const hasValidFiltersForAPI = useCallback(() => {
     const hasKeyword = searchInput.trim() !== "";
-    const hasDegree = selectedDegree !== "כל התארים";
-    const hasYear = selectedYear !== "כל השנים";
+    const hasDegreeFilter = selectedDegree !== "";
+    const hasYearFilter = selectedYear !== "";
 
-    return hasKeyword || hasDegree || hasYear;
+    return hasKeyword || hasDegreeFilter || hasYearFilter;
   }, [searchInput, selectedDegree, selectedYear]);
 
   const handleFilter = useCallback(() => {
     // Update URL first
     updateURL(searchInput, selectedDegree, selectedYear);
 
+    // If no filters applied, don't call API (show default user courses)
     if (!hasValidFiltersForAPI()) {
       return;
     }
@@ -125,13 +127,19 @@ export default function CoursesPage() {
       keyword?: string;
       degree_id?: number;
       year_id?: number;
+      all_degrees?: number;
+      all_years?: number;
     } = {};
 
+    // Add keyword if present
     if (searchInput.trim()) {
       filters.keyword = searchInput.trim();
     }
 
-    if (selectedDegree !== "כל התארים") {
+    // Handle degree selection
+    if (selectedDegree === "כל התארים") {
+      filters.all_degrees = 1;
+    } else if (selectedDegree !== "") {
       const selectedDegreeData = degrees?.find(
         (d) => d.name === selectedDegree
       );
@@ -140,10 +148,13 @@ export default function CoursesPage() {
       }
     }
 
-    if (selectedYear !== "כל השנים") {
+    // Handle year selection
+    if (selectedYear === "כל השנים") {
+      filters.all_years = 1;
+    } else if (selectedYear !== "") {
       let selectedYearData;
 
-      if (selectedDegree !== "כל התארים") {
+      if (selectedDegree !== "" && selectedDegree !== "כל התארים") {
         const selectedDegreeData = degrees?.find(
           (d) => d.name === selectedDegree
         );
@@ -165,9 +176,8 @@ export default function CoursesPage() {
       }
     }
 
-    if (Object.keys(filters).length > 0) {
-      dispatch(filterCourses(filters));
-    }
+    // Dispatch the filter action
+    dispatch(filterCourses(filters));
   }, [
     searchInput,
     selectedDegree,
@@ -195,26 +205,25 @@ export default function CoursesPage() {
     };
   }, [handleFilter]);
 
-  // Rest of your component remains the same...
   const availableDegrees = useMemo(() => {
-    if (!degrees) return ["כל התארים"];
+    if (!degrees) return ["התואר שלי", "כל התארים"];
     const degreeNames = degrees.map((degree) => degree.name);
-    return ["כל התארים", ...degreeNames];
+    return ["התואר שלי", "כל התארים", ...degreeNames];
   }, [degrees]);
 
   const availableYears = useMemo(() => {
-    if (!degrees) return ["כל השנים"];
+    if (!degrees) return ["השנה שלי", "כל השנים"];
 
-    if (selectedDegree === "כל התארים") {
+    if (selectedDegree === "" || selectedDegree === "כל התארים") {
       const allYears = degrees.flatMap(
         (degree) => degree.years?.map((year) => year.name) || []
       );
-      return ["כל השנים", ...Array.from(new Set(allYears))];
+      return ["השנה שלי", "כל השנים", ...Array.from(new Set(allYears))];
     } else {
       const selectedDegreeData = degrees.find((d) => d.name === selectedDegree);
-      if (!selectedDegreeData?.years) return ["כל השנים"];
+      if (!selectedDegreeData?.years) return ["השנה שלי", "כל השנים"];
       const years = selectedDegreeData.years.map((year) => year.name);
-      return ["כל השנים", ...years];
+      return ["השנה שלי", "כל השנים", ...years];
     }
   }, [degrees, selectedDegree]);
 
@@ -247,7 +256,7 @@ export default function CoursesPage() {
     }
 
     if (
-      (selectedDegree !== "כל התארים" || selectedYear !== "כל השנים") &&
+      (selectedDegree !== "" || selectedYear !== "") &&
       userProfile?.degree_years &&
       degrees
     ) {
@@ -256,7 +265,11 @@ export default function CoursesPage() {
 
       let selectedYearId: number | undefined;
 
-      if (selectedYear !== "כל השנים" && selectedDegreeData) {
+      if (
+        selectedYear !== "" &&
+        selectedYear !== "כל השנים" &&
+        selectedDegreeData
+      ) {
         const selectedYearData = (selectedDegreeData.years ?? []).find(
           (y) => y.name === selectedYear
         );
@@ -266,9 +279,11 @@ export default function CoursesPage() {
       const matchingDegreeYears = userProfile.degree_years.filter(
         (degreeYear: DegreeYear) => {
           const degreeMatch =
+            selectedDegree === "" ||
             selectedDegree === "כל התארים" ||
             degreeYear.degree_id === selectedDegreeId;
           const yearMatch =
+            selectedYear === "" ||
             selectedYear === "כל השנים" ||
             degreeYear.year_id === selectedYearId;
           return degreeMatch && yearMatch;
@@ -294,33 +309,49 @@ export default function CoursesPage() {
     degrees,
   ]);
 
+  // Show API results when filters are applied, otherwise show user's courses
   const displayCourses = useMemo(() => {
     if (hasValidFiltersForAPI() && apiFilteredCourses) {
       return apiFilteredCourses;
     }
-
     return clientFilteredCourses;
   }, [hasValidFiltersForAPI, apiFilteredCourses, clientFilteredCourses]);
 
   const handleDegreeSelect = (degree: string) => {
-    setSelectedDegree(degree);
+    // If "התואר שלי" is selected, set to empty string (default)
+    if (degree === "התואר שלי") {
+      setSelectedDegree("");
+      setSelectedYear("");
+    } else {
+      setSelectedDegree(degree);
+      setSelectedYear("");
+    }
     setIsDegreeDropdownOpen(false);
-    setSelectedYear("כל השנים");
     setDegreeSearch("");
   };
 
   const handleYearSelect = (year: string) => {
-    setSelectedYear(year);
+    // If "השנה שלי" is selected, set to empty string (default)
+    if (year === "השנה שלי") {
+      setSelectedYear("");
+    } else {
+      setSelectedYear(year);
+    }
     setIsYearDropdownOpen(false);
     setYearSearch("");
   };
 
   const handleClearSearch = () => {
     setSearchInput("");
-    setSelectedDegree("כל התארים");
-    setSelectedYear("כל השנים");
-    updateURL("", "כל התארים", "כל השנים");
+    setSelectedDegree("");
+    setSelectedYear("");
+    updateURL("", "", "");
   };
+
+  // Display text for dropdowns
+  const degreeDisplayText =
+    selectedDegree === "" ? "התואר שלי" : selectedDegree;
+  const yearDisplayText = selectedYear === "" ? "השנה שלי" : selectedYear;
 
   const isLoading = loading || filterLoading;
 
@@ -354,12 +385,12 @@ export default function CoursesPage() {
         <div className="flex gap-1 lg:col-span-2 lg:justify-end justify-center">
           <div className="relative" ref={degreeDropdownRef}>
             <button
-              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl   transition-colors min-w-[160px]"
+              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl transition-colors min-w-[160px]"
               onClick={() => setIsDegreeDropdownOpen(!isDegreeDropdownOpen)}
               disabled={degreesLoading}
             >
-              <span className="text-base text-slate-gray font-bold ">
-                {degreesLoading ? "טוען..." : selectedDegree}
+              <span className="text-base text-slate-gray font-bold">
+                {degreesLoading ? "טוען..." : degreeDisplayText}
               </span>
               <Image
                 src={"/assets/images/icons/circlesfour.svg"}
@@ -385,7 +416,10 @@ export default function CoursesPage() {
                     <li
                       key={degree}
                       className={`px-4 py-2 hover:bg-gray-100 cursor-pointer text-right ${
-                        selectedDegree === degree ? "bg-amber-50" : ""
+                        selectedDegree === degree ||
+                        (selectedDegree === "" && degree === "התואר שלי")
+                          ? "bg-amber-50"
+                          : ""
                       }`}
                       onClick={() => handleDegreeSelect(degree)}
                     >
@@ -399,11 +433,11 @@ export default function CoursesPage() {
 
           <div className="relative" ref={yearDropdownRef}>
             <button
-              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl   transition-colors min-w-[140px]"
+              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl transition-colors min-w-[140px]"
               onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
             >
               <span className="text-base text-slate-gray font-bold">
-                {selectedYear}
+                {yearDisplayText}
               </span>
               <Image
                 src={"/assets/images/icons/chartBar.svg"}
@@ -429,7 +463,10 @@ export default function CoursesPage() {
                     <li
                       key={year}
                       className={`px-4 py-2 hover:bg-gray-100 cursor-pointer text-right ${
-                        selectedYear === year ? "bg-amber-50" : ""
+                        selectedYear === year ||
+                        (selectedYear === "" && year === "השנה שלי")
+                          ? "bg-amber-50"
+                          : ""
                       }`}
                       onClick={() => handleYearSelect(year)}
                     >
