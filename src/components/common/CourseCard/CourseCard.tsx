@@ -8,7 +8,7 @@ import { getFullUrl } from "@/utils/helper";
 interface CourseCardProps {
   id: number;
   title: string;
-  instructor: string;
+  instructor?: string;
   level?: string;
   image?: string;
   price?: string;

@@ -334,8 +334,29 @@ export interface CouponValidationResponse {
   errors: string[] | null;
 }
 
-export interface BuyCourseRequest {
+interface BuyCourseRequest {
   course_ids: number[];
-  coupon?: string;
-  coupon_id?: number;
+  price: number;
+  discount_price: number;
+  coupon_code?: string;
+}
+
+export interface TeachersListResponse extends CustomAxiosResponse<Teacher[]> {
+  status: boolean;
+  message: string;
+  data: Teacher[];
+  errors?: Record<string, string[]>;
+}
+
+// Teacher Detail Types
+export interface TeacherDetail extends Teacher {
+  courses: Course[];
+}
+
+export interface TeacherDetailResponse
+  extends CustomAxiosResponse<TeacherDetail> {
+  status: boolean;
+  message: string;
+  data: TeacherDetail;
+  errors?: Record<string, string[]>;
 }

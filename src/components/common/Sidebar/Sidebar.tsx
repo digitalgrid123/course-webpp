@@ -3,7 +3,12 @@
 import React, { useState } from "react";
 import { Settings, LogOut, Menu, X, LogOutIcon } from "lucide-react";
 import Image from "next/image";
-import { SearchIcon, CartIcon, LearningIcon } from "@/lib/CustomIcons";
+import {
+  SearchIcon,
+  CartIcon,
+  LearningIcon,
+  InstructorIcon,
+} from "@/lib/CustomIcons";
 import { useTranslations } from "next-intl";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -34,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = [
     { id: "dashboard", label: t("courses"), icon: SearchIcon },
     { id: "myCourses", label: t("myCourses"), icon: LearningIcon },
+    { id: "instructors", label: t("instructors"), icon: InstructorIcon },
     { id: "cart", label: t("cart"), icon: CartIcon },
   ];
 

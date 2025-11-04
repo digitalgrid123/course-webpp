@@ -4,6 +4,7 @@ import degreeYearsReducer from "./slices/degreeYearsSlice";
 import onboardingReducer from "./slices/onboardingSlice";
 import courseReducer from "./slices/courseSlice";
 import cartReducer from "./slices/cartSlice";
+import teacherReducer from "./slices/teacherSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     onboarding: onboardingReducer,
     course: courseReducer,
     cart: cartReducer,
+    teacher: teacherReducer,
   },
 });
 
