@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { Search } from "lucide-react";
 import { CourseCard } from "@/components/common/CourseCard/CourseCard";
-import Image from "next/image";
+
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,6 +20,7 @@ import { filterCourses } from "@/store/slices/courseSlice";
 import { Course, DegreeYear } from "@/types";
 import toast from "react-hot-toast";
 import { SkeletonGrid } from "@/components/common/SkeletonGrid/SkeletonGrid";
+import { Dropdown, DropdownOption } from "@/components/common/Form/Dropdown";
 
 // Local storage keys
 const FILTER_STORAGE_KEY = "course_filters";
@@ -75,13 +76,7 @@ export default function CoursesPage() {
   const [selectedYear, setSelectedYear] = useState(
     () => getStoredFilters().year
   );
-  const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
-  const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
-  const [degreeSearch, setDegreeSearch] = useState("");
-  const [yearSearch, setYearSearch] = useState("");
 
-  const degreeDropdownRef = useRef<HTMLDivElement>(null);
-  const yearDropdownRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<number | null>(null);
 
   // Save filters to localStorage
@@ -114,25 +109,6 @@ export default function CoursesPage() {
     dispatch(fetchDashboardHome());
     dispatch(fetchDegreeYears());
   }, [dispatch]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        degreeDropdownRef.current &&
-        !degreeDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDegreeDropdownOpen(false);
-      }
-      if (
-        yearDropdownRef.current &&
-        !yearDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsYearDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   useEffect(() => {
     if (error && errorType !== "filter") {
@@ -240,39 +216,56 @@ export default function CoursesPage() {
     };
   }, [handleFilter]);
 
-  const availableDegrees = useMemo(() => {
-    if (!degrees) return ["התואר שלי", "כל התארים"];
-    const degreeNames = degrees.map((degree) => degree.name);
-    return ["התואר שלי", "כל התארים", ...degreeNames];
+  // Prepare dropdown options
+  const degreeOptions: DropdownOption[] = useMemo(() => {
+    if (!degrees)
+      return [
+        { value: "", label: "התואר שלי" },
+        { value: "כל התארים", label: "כל התארים" },
+      ];
+
+    const degreeOptions = degrees.map((degree) => ({
+      value: degree.name,
+      label: degree.name,
+    }));
+
+    return [
+      { value: "", label: "התואר שלי" },
+      { value: "כל התארים", label: "כל התארים" },
+      ...degreeOptions,
+    ];
   }, [degrees]);
 
-  const availableYears = useMemo(() => {
-    if (!degrees) return ["השנה שלי", "כל השנים"];
+  const yearOptions: DropdownOption[] = useMemo(() => {
+    if (!degrees)
+      return [
+        { value: "", label: "השנה שלי" },
+        { value: "כל השנים", label: "כל השנים" },
+      ];
+
+    let years: string[] = [];
 
     if (selectedDegree === "" || selectedDegree === "כל התארים") {
-      const allYears = degrees.flatMap(
+      years = degrees.flatMap(
         (degree) => degree.years?.map((year) => year.name) || []
       );
-      return ["השנה שלי", "כל השנים", ...Array.from(new Set(allYears))];
     } else {
       const selectedDegreeData = degrees.find((d) => d.name === selectedDegree);
-      if (!selectedDegreeData?.years) return ["השנה שלי", "כל השנים"];
-      const years = selectedDegreeData.years.map((year) => year.name);
-      return ["השנה שלי", "כל השנים", ...years];
+      years = selectedDegreeData?.years?.map((year) => year.name) || [];
     }
+
+    const uniqueYears = Array.from(new Set(years));
+    const yearOptions = uniqueYears.map((year) => ({
+      value: year,
+      label: year,
+    }));
+
+    return [
+      { value: "", label: "השנה שלי" },
+      { value: "כל השנים", label: "כל השנים" },
+      ...yearOptions,
+    ];
   }, [degrees, selectedDegree]);
-
-  const filteredDegrees = useMemo(() => {
-    return availableDegrees.filter((degree) =>
-      degree.toLowerCase().includes(degreeSearch.toLowerCase())
-    );
-  }, [availableDegrees, degreeSearch]);
-
-  const filteredYears = useMemo(() => {
-    return availableYears.filter((year) =>
-      year.toLowerCase().includes(yearSearch.toLowerCase())
-    );
-  }, [availableYears, yearSearch]);
 
   const allCourses = useMemo(() => {
     if (!userProfile?.degree_years) return [];
@@ -353,27 +346,13 @@ export default function CoursesPage() {
   }, [hasValidFiltersForAPI, apiFilteredCourses, clientFilteredCourses]);
 
   const handleDegreeSelect = (degree: string) => {
-    // If "התואר שלי" is selected, set to empty string (default)
-    if (degree === "התואר שלי") {
-      setSelectedDegree("");
-      setSelectedYear("");
-    } else {
-      setSelectedDegree(degree);
-      setSelectedYear("");
-    }
-    setIsDegreeDropdownOpen(false);
-    setDegreeSearch("");
+    setSelectedDegree(degree);
+    // Reset year when degree changes
+    setSelectedYear("");
   };
 
   const handleYearSelect = (year: string) => {
-    // If "השנה שלי" is selected, set to empty string (default)
-    if (year === "השנה שלי") {
-      setSelectedYear("");
-    } else {
-      setSelectedYear(year);
-    }
-    setIsYearDropdownOpen(false);
-    setYearSearch("");
+    setSelectedYear(year);
   };
 
   const handleClearSearch = () => {
@@ -382,11 +361,6 @@ export default function CoursesPage() {
     setSelectedYear("");
     clearFiltersFromStorage();
   };
-
-  // Display text for dropdowns
-  const degreeDisplayText =
-    selectedDegree === "" ? "התואר שלי" : selectedDegree;
-  const yearDisplayText = selectedYear === "" ? "השנה שלי" : selectedYear;
 
   const isLoading = loading || filterLoading;
 
@@ -418,100 +392,27 @@ export default function CoursesPage() {
         </div>
 
         <div className="flex gap-1 lg:col-span-2 lg:justify-end justify-center">
-          <div className="relative" ref={degreeDropdownRef}>
-            <button
-              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl transition-colors min-w-[160px]"
-              onClick={() => setIsDegreeDropdownOpen(!isDegreeDropdownOpen)}
-              disabled={degreesLoading}
-            >
-              <span className="text-base text-slate-gray font-bold">
-                {degreesLoading ? "טוען..." : degreeDisplayText}
-              </span>
-              <Image
-                src={"/assets/images/icons/circlesfour.svg"}
-                width={20}
-                height={20}
-                alt="degree-filter"
-              />
-            </button>
+          <Dropdown
+            options={degreeOptions}
+            selectedValue={selectedDegree}
+            onSelect={handleDegreeSelect}
+            placeholder="התואר שלי"
+            searchPlaceholder="חיפוש תואר..."
+            iconSrc="/assets/images/icons/circlesfour.svg"
+            iconAlt="degree-filter"
+            disabled={degreesLoading}
+            loading={degreesLoading}
+          />
 
-            {isDegreeDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 bg-white border-1.5 rounded shadow-md border-amber-gold z-10">
-                <div className="p-2 border-b border-gray-200">
-                  <Input
-                    type="text"
-                    placeholder="חיפוש תואר..."
-                    value={degreeSearch}
-                    onChange={(e) => setDegreeSearch(e.target.value)}
-                    className="text-right"
-                  />
-                </div>
-                <ul className="max-h-60 overflow-y-auto">
-                  {filteredDegrees.map((degree) => (
-                    <li
-                      key={degree}
-                      className={`px-4 py-2 hover:bg-gray-100 cursor-pointer text-right ${
-                        selectedDegree === degree ||
-                        (selectedDegree === "" && degree === "התואר שלי")
-                          ? "bg-amber-50"
-                          : ""
-                      }`}
-                      onClick={() => handleDegreeSelect(degree)}
-                    >
-                      {degree}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <div className="relative" ref={yearDropdownRef}>
-            <button
-              className="flex items-center justify-center gap-1 px-4 py-2 rounded-xl transition-colors min-w-[140px]"
-              onClick={() => setIsYearDropdownOpen(!isYearDropdownOpen)}
-            >
-              <span className="text-base text-slate-gray font-bold">
-                {yearDisplayText}
-              </span>
-              <Image
-                src={"/assets/images/icons/chartBar.svg"}
-                width={20}
-                height={20}
-                alt="year-filter"
-              />
-            </button>
-
-            {isYearDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-white border-1.5 rounded shadow-md border-amber-gold z-10">
-                <div className="p-2 border-b border-gray-200">
-                  <Input
-                    type="text"
-                    placeholder="חיפוש שנה..."
-                    value={yearSearch}
-                    onChange={(e) => setYearSearch(e.target.value)}
-                    className="text-right"
-                  />
-                </div>
-                <ul className="max-h-60 overflow-y-auto">
-                  {filteredYears.map((year) => (
-                    <li
-                      key={year}
-                      className={`px-4 py-2 hover:bg-gray-100 cursor-pointer text-right ${
-                        selectedYear === year ||
-                        (selectedYear === "" && year === "השנה שלי")
-                          ? "bg-amber-50"
-                          : ""
-                      }`}
-                      onClick={() => handleYearSelect(year)}
-                    >
-                      {year}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          <Dropdown
+            options={yearOptions}
+            selectedValue={selectedYear}
+            onSelect={handleYearSelect}
+            placeholder="השנה שלי"
+            searchPlaceholder="חיפוש שנה..."
+            iconSrc="/assets/images/icons/chartBar.svg"
+            iconAlt="year-filter"
+          />
         </div>
       </div>
 

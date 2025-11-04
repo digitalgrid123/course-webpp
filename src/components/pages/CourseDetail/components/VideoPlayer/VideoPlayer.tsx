@@ -80,13 +80,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         setCurrentTime(seekTime);
         setPlayed(initialProgress / 100);
         hasSetInitialProgress.current = true;
-
-        console.log("Video Player: Seeked to initial progress", {
-          initialProgress,
-          seekTime,
-          duration: video.duration,
-          timestamp: new Date().toISOString(),
-        });
       }
     };
 
@@ -322,7 +315,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   return (
     <div className="bg-white rounded-4xl shadow-md overflow-visible">
       <div
-        className="bg-gray-900 aspect-video relative rounded-4xl overflow-hidden"
+        className="bg-gray-900 aspect-4/3 sm:aspect-video relative rounded-4xl overflow-hidden"
         onMouseMove={resetControlsTimeout}
         onMouseEnter={() => setShowControls(true)}
         onMouseLeave={() => {
@@ -373,7 +366,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         />
 
         <div
-          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 transition-opacity duration-300 ${
+          className={`absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 via-black/50 to-transparent p-4 transition-opacity duration-300 ${
             showControls ? "opacity-100" : "opacity-0"
           }`}
         >

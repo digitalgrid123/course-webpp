@@ -532,7 +532,10 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-8 py-8" dir="rtl">
+    <div
+      className="min-h-screen bg-white px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10"
+      dir="rtl"
+    >
       <Breadcrumb
         items={[
           { label: "ראשי" },
@@ -545,7 +548,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
 
       <div className="py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 order-first lg:order-last">
+          <div className="lg:col-span-1 order-last lg:order-last">
             <div className="sticky top-8">
               <div className="bg-linear-(--gradient-amber) rounded-2xl p-8 text-white mb-6">
                 <div className="flex flex-col items-center">
@@ -804,7 +807,9 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
           </div>
 
           <div className="lg:col-span-3 space-y-6">
-            {/* Type 3: Meeting Link Display */}
+            <h1 className="text-3xl font-bold text-charcoal-blue mb-5 text-right sm:hidden block">
+              {videoData.lessonName || courseDetail.name}
+            </h1>
             {videoData.lessonType === 3 && videoData.meetingLink ? (
               <div className="bg-white rounded-4xl shadow-md overflow-hidden">
                 <div className="bg-gray-900 aspect-video relative rounded-4xl flex items-center justify-center">
@@ -818,7 +823,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
                     />
                   )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent"></div>
 
                   <div className="relative z-10 text-center text-white px-8">
                     <svg
@@ -917,11 +922,11 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
               </div>
             )}
 
-            <div className="p-6">
-              <h1 className="text-3xl font-bold text-charcoal-blue mb-5 text-center">
+            <div className="sm:p-6">
+              <h1 className="text-3xl font-bold text-charcoal-blue mb-5 text-center sm:block hidden">
                 {videoData.lessonName || courseDetail.name}
               </h1>
-              <div className="flex items-center justify-between gap-4 text-charcoal-blue text-sm">
+              <div className="flex items-center sm:justify-between justify-center gap-6 sm:gap-4 text-charcoal-blue text-sm">
                 <div className="flex items-center gap-2">
                   מרצה: {courseDetail.teacher.name}
                 </div>

@@ -16,8 +16,8 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, onBack }) => {
   const lastItem = items[items.length - 1].label;
 
   return (
-    <div className="flex items-center justify-end  gap-4 py-2 " dir="rtl">
-      <div className="flex items-center gap-2 text-charcoal-blue text-sm">
+    <div className="flex items-center justify-end gap-4 py-2" dir="rtl">
+      <div className="hidden sm:flex items-center gap-2 text-charcoal-blue text-sm">
         <span className="font-medium text-charcoal-blue">{lastItem}</span>
         <span className="text-gray-500">/</span>
         <span className="underline underline-offset-4 decoration-gray-400 cursor-pointer hover:text-amber-gold hover:decoration-amber-gold">

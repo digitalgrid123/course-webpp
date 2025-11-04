@@ -162,7 +162,6 @@ export const purchaseCourses = createAsyncThunk<
       }),
     };
 
-    console.log("Purchase data:", purchaseData);
     const response = await buyCourseApi(purchaseData);
     return response;
   } catch (error) {

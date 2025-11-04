@@ -21,6 +21,7 @@ interface InstructorDetailProps {
 
 const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
   const [activeTab, setActiveTab] = useState("courses");
+  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
@@ -59,15 +60,22 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
     return tmp.textContent || tmp.innerText || "";
   };
 
+  // Close bottom sheet when clicking outside or on backdrop
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsBottomSheetOpen(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-white px-8 py-8" dir="rtl">
+      <div className="min-h-screen bg-white px-4 sm:px-8 py-8" dir="rtl">
         {/* Breadcrumb Skeleton */}
         <div className="animate-pulse mb-8">
           <div className="h-6 bg-gray-200 rounded w-1/4"></div>
         </div>
 
-        <div className="py-8">
+        <div className="sm:py-8 py-4">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar Skeleton */}
             <div className="lg:col-span-1 order-first lg:order-last">
@@ -103,7 +111,7 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
   if (error) {
     return (
       <div
-        className="min-h-screen bg-white px-8 py-8 flex items-center justify-center"
+        className="min-h-screen bg-white px-4 sm:px-8 py-8 flex items-center justify-center"
         dir="rtl"
       >
         <div className="text-center">
@@ -123,7 +131,7 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
 
   if (!teacher) {
     return (
-      <div className="min-h-screen bg-white px-8 py-8 flex items-center justify-center">
+      <div className="min-h-screen bg-white px-4 sm:px-8 py-8 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">👨‍🏫</div>
           <div className="text-xl text-gray-500">
@@ -141,15 +149,19 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white px-8 py-8" dir="rtl">
+    <div
+      className="min-h-screen bg-white px-4 sm:px-6 md:px-8 lg:px-12 py-6 sm:py-8 md:py-10"
+      dir="rtl"
+    >
       <Breadcrumb
         items={[{ label: "ראשי" }, { label: "מרצים" }, { label: teacher.name }]}
         onBack={handleBackNavigation}
       />
 
-      <div className="py-8">
+      <div className="sm:py-8 py-4">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1 order-first lg:order-last">
+          {/* Sidebar - Hidden on mobile, shown on desktop */}
+          <div className="lg:col-span-1 order-last lg:order-last hidden lg:block">
             <div className="sticky top-8">
               <div className="bg-linear-(--gradient-amber) rounded-2xl p-8 text-white mb-6">
                 <div className="flex flex-col items-center">
@@ -181,12 +193,10 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                     )}
                   </div>
 
-                  {/* Instructor Name */}
                   <h1 className="text-xl font-bold text-center mb-4">
                     {teacher.name}
                   </h1>
 
-                  {/* Courses Count */}
                   <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
                     <svg
                       className="w-5 h-5"
@@ -210,7 +220,6 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                     </p>
                   </div>
 
-                  {/* Bio */}
                   <div className="w-full">
                     <h3 className="font-bold text-sm mb-3 text-right">
                       קצת עליי:
@@ -235,7 +244,6 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                 </div>
               </div>
 
-              {/* Stats Card */}
               <div className="bg-linear-(--gradient-amber) rounded-2xl p-6 text-white">
                 <h3 className="text-center font-bold text-base mb-4">
                   סטטיסטיקות
@@ -267,13 +275,71 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
 
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
+            {/* Mobile Instructor Summary Card - Only shown on mobile */}
+            <div className="lg:hidden bg-linear-(--gradient-amber) rounded-2xl p-6 text-white mb-6">
+              <div className="flex items-center gap-4">
+                <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-white/20 flex-shrink-0">
+                  {teacher.image ? (
+                    <Image
+                      src={getFullUrl(teacher.image)}
+                      alt={teacher.name}
+                      fill
+                      style={{ objectFit: "cover" }}
+                      className="w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-white/20 text-white">
+                      <svg
+                        className="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg font-bold mb-2 truncate">
+                    {teacher.name}
+                  </h1>
+                  <div className="flex items-center gap-2 text-sm">
+                    <svg
+                      className="w-4 h-4 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <span>
+                      {teacher.courses_count}{" "}
+                      {teacher.courses_count === 1 ? "קורס" : "קורסים"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Header Section */}
-            <div className="bg-white rounded-2xl shadow-orange-soft p-8">
+            <div className="bg-white rounded-2xl shadow-orange-soft p-6 sm:p-8">
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-charcoal-blue mb-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-charcoal-blue mb-4">
                   {teacher.name}
                 </h1>
-                <p className="text-gray-600 text-lg leading-relaxed max-w-3xl mx-auto">
+                <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-3xl mx-auto">
                   {teacher.bio && stripHtml(teacher.bio)}
                 </p>
               </div>
@@ -285,7 +351,7 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                 <div className="flex justify-center">
                   <button
                     onClick={() => setActiveTab("courses")}
-                    className={`px-8 py-4 transition-all relative ${
+                    className={`px-4 sm:px-8 py-4 transition-all relative flex-1 sm:flex-none text-sm sm:text-base ${
                       activeTab === "courses"
                         ? "text-charcoal-blue font-bold"
                         : "text-gray-400 hover:text-charcoal-blue hover:bg-gray-50"
@@ -299,7 +365,7 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
 
                   <button
                     onClick={() => setActiveTab("about")}
-                    className={`px-8 py-4 transition-all relative ${
+                    className={`px-4 sm:px-8 py-4 transition-all relative flex-1 sm:flex-none text-sm sm:text-base ${
                       activeTab === "about"
                         ? "text-charcoal-blue font-bold"
                         : "text-gray-400 hover:text-charcoal-blue hover:bg-gray-50"
@@ -314,15 +380,15 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
               </div>
 
               {/* Tab Content */}
-              <div className="p-8">
+              <div className="sm:p-8 p-4">
                 {activeTab === "courses" && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-charcoal-blue mb-6">
+                    <h2 className="text-xl sm:text-2xl font-bold text-charcoal-blue mb-6">
                       הקורסים של {teacher.name}
                     </h2>
 
                     {teacher.courses && teacher.courses.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {teacher.courses.map((course) => (
                           <CourseCard
                             key={course.id}
@@ -335,9 +401,9 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12">
+                      <div className="text-center py-8 sm:py-12">
                         <svg
-                          className="w-16 h-16 text-gray-400 mx-auto mb-4"
+                          className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -349,7 +415,7 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
                             d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                           />
                         </svg>
-                        <p className="text-gray-500 text-lg">
+                        <p className="text-gray-500 text-base sm:text-lg">
                           אין קורסים זמינים ממרצה זה עדיין
                         </p>
                         <p className="text-sm text-gray-400 mt-2">
@@ -362,11 +428,11 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
 
                 {activeTab === "about" && (
                   <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-charcoal-blue">
+                    <h2 className="text-xl sm:text-2xl font-bold text-charcoal-blue">
                       אודות {teacher.name}
                     </h2>
 
-                    <div className="prose prose-lg max-w-none text-gray-700">
+                    <div className="prose prose-sm sm:prose-lg max-w-none text-gray-700">
                       {teacher.detail ? (
                         <div
                           dangerouslySetInnerHTML={{
@@ -392,6 +458,152 @@ const InstructorDetail: React.FC<InstructorDetailProps> = ({ id }) => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Bottom Sheet Button - Only shown on mobile */}
+      <div className="lg:hidden fixed bottom-6 left-6 right-6 z-50">
+        <button
+          onClick={() => setIsBottomSheetOpen(true)}
+          className="w-full bg-linear-(--gradient-amber) text-white py-4 px-6 rounded-2xl shadow-lg font-bold text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95"
+        >
+          פרטים נוספים על המרצה
+        </button>
+      </div>
+
+      {/* Bottom Sheet Overlay */}
+      {isBottomSheetOpen && (
+        <div
+          className="fixed inset-0 bg-[rgba(0,0,0,0.2)] backdrop-blur-sm z-50 lg:hidden transition-opacity duration-300"
+          onClick={handleBackdropClick}
+        >
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl max-h-[85vh] overflow-hidden">
+            {/* Drag Handle */}
+            <div className="flex justify-center py-3">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            {/* Sheet Content */}
+            <div className="overflow-y-auto max-h-[calc(85vh-50px)]">
+              <div className="bg-linear-(--gradient-amber) rounded-t-3xl p-6 text-white">
+                <div className="flex flex-col items-center">
+                  <div className="relative h-24 w-24 rounded-full overflow-hidden border-4 border-white/20 mb-4">
+                    {teacher.image ? (
+                      <Image
+                        src={getFullUrl(teacher.image)}
+                        alt={teacher.name}
+                        fill
+                        style={{ objectFit: "cover" }}
+                        className="w-full h-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-white/20 text-white">
+                        <svg
+                          className="w-8 h-8"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  <h1 className="text-xl font-bold text-center mb-4">
+                    {teacher.name}
+                  </h1>
+
+                  <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <p className="text-sm font-medium">
+                      <span className="ml-1 text-amber-700 font-bold">
+                        {teacher.courses_count}{" "}
+                      </span>
+                      {teacher.courses_count === 1 ? " קורס" : " קורסים"}
+                    </p>
+                  </div>
+
+                  <div className="w-full mb-6">
+                    <h3 className="font-bold text-sm mb-3 text-right">
+                      קצת עליי:
+                    </h3>
+                    <div className="h-32 overflow-y-auto text-xs text-white/90 text-right space-y-3 custom-scrollbar">
+                      {teacher.bio && (
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: teacher.bio,
+                          }}
+                        ></div>
+                      )}
+                      {teacher.detail && (
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: teacher.detail,
+                          }}
+                        ></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats Card in Bottom Sheet */}
+              <div className="bg-linear-(--gradient-amber) p-6 text-white">
+                <h3 className="text-center font-bold text-base mb-4">
+                  סטטיסטיקות
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">סה&quot;כ קורסים</span>
+
+                    <span className="font-bold text-lg">
+                      {teacher.courses_count}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">סה&quot;כ סטודנטים</span>
+
+                    <span className="font-bold text-lg">
+                      {teacher.courses?.reduce(
+                        (total, course) => total + (course.students_count || 0),
+                        0
+                      ) || 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="p-6 bg-white">
+                <button
+                  onClick={() => setIsBottomSheetOpen(false)}
+                  className="w-full bg-gray-100 text-charcoal-blue py-3 px-6 rounded-xl font-bold text-lg hover:bg-gray-200 transition-all duration-200"
+                >
+                  סגור
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
