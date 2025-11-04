@@ -270,13 +270,18 @@ export const updateLessonProgress = createAsyncThunk<
 
 export const filterCourses = createAsyncThunk<
   { data: Course[]; message: string },
-  { keyword?: string; degree_id?: number; year_id?: number },
+  {
+    keyword?: string;
+    degree_id?: number;
+    year_id?: number;
+    all_degrees?: number;
+    all_years?: number;
+  },
   { rejectValue: ErrorResponse }
 >("course/filterCourses", async (filters, { rejectWithValue }) => {
   try {
     const response = await filterCoursesApi(filters);
     if (response.status) {
-      // Return empty array instead of rejecting when no courses found
       return {
         data: response.data || [],
         message: response.message || "Filter applied successfully",
