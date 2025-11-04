@@ -13,6 +13,7 @@
   "Sidebar": {
     "courses": "קורסים",
     "myCourses": "הקורסים שלי",
+    "instructors": "מדריכים",
     "cart": "סל הקניות",
     "settings": "הגדרות",
     "logout": "התנתק",
@@ -179,6 +180,18 @@
     }
   },
 
+  "Instructors": {
+    "metadata": {
+      "title": "כל המדריכים",
+      "description": "גלה את כל המדריכים המומחים שלנו והתחל ללמוד מהטובים ביותר.",
+      "keywords": "מדריכים, הוראה, למידה, קורסים, אוניברסיטה"
+    },
+    "allInstructors": "כל המדריכים",
+    "error": "נכשל בטעינת המדריכים",
+    "retry": "נסה שוב",
+    "noInstructors": "לא נמצאו מדריכים",
+    "noInstructorsDescription": "כרגע אין מדריכים זמינים."
+  },
   "Footer": {
     "copyright": "© 2025 אפליקציית קורסים. קוד פתוח תחת רישיון MIT.",
     "githubLink": "GitHub"

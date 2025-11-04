@@ -250,7 +250,7 @@ export default function Cart() {
                             <Button
                               type="button"
                               onClick={handleRemoveCoupon}
-                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap h-full"
+                              className="bg-white hover:bg-black text-charcoal-blue px-4 py-3 rounded-md text-sm font-medium whitespace-nowrap h-full"
                             >
                               הסר
                             </Button>

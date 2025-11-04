@@ -14,6 +14,7 @@
     "courses": "Courses",
     "myCourses": "My Courses",
     "cart": "Cart",
+    "instructors": "Instructors",
     "settings": "Settings",
     "logout": "Logout",
     "confirmLogout": "Confirm Logout",
@@ -176,6 +177,18 @@
       "description": "Manage your account and preferences",
       "keywords": "settings, account, preferences, profile"
     }
+  },
+  "Instructors": {
+    "metadata": {
+      "title": "All Instructors",
+      "description": "Explore all our expert instructors and start learning from the best.",
+      "keywords": "instructors, teachers, learning, courses, university"
+    },
+    "allInstructors": "All Instructors",
+    "error": "Failed to load instructors",
+    "retry": "Try Again",
+    "noInstructors": "No instructors found",
+    "noInstructorsDescription": "There are currently no instructors available."
   },
   "Footer": {
     "copyright": "© 2025 Courses App. Open source under MIT license.",

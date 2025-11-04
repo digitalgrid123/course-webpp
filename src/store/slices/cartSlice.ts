@@ -137,19 +137,23 @@ export const purchaseCourses = createAsyncThunk<
 >("cart/purchaseCourses", async (_, { getState, rejectWithValue }) => {
   try {
     const { cart } = getState();
+    console.log("🚀 ~ cart:", cart);
     const courseIds = cart.items.map((course) => course.id);
 
     if (courseIds.length === 0) {
       return rejectWithValue("No courses in cart");
     }
 
+    const originalPrice = cart.totalAmount;
+    const finalPrice = cart.coupon.validated ? cart.coupon.newTotal : 1;
+
     const purchaseData: BuyCourseRequest = {
       course_ids: courseIds,
-      price: cart.coupon.validated ? cart.coupon.newTotal : cart.totalAmount,
-      ...(cart.coupon.validated &&
-        cart.coupon.coupon_id && {
-          coupon_id: cart.coupon.coupon_id,
-        }),
+      price: originalPrice,
+      discount_price: finalPrice,
+      ...(cart.coupon.validated && {
+        coupon_code: cart.coupon.code,
+      }),
     };
 
     const response = await buyCourseApi(purchaseData);
