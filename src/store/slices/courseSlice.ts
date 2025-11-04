@@ -280,20 +280,32 @@ export const filterCourses = createAsyncThunk<
   { rejectValue: ErrorResponse }
 >("course/filterCourses", async (filters, { rejectWithValue }) => {
   try {
+    const hasValidFilter = Object.values(filters).some(
+      (value) => value !== undefined && value !== null && value !== ""
+    );
+
+    if (!hasValidFilter) {
+      return {
+        data: [],
+        message: "לא הוחלו מסננים",
+      };
+    }
+
     const response = await filterCoursesApi(filters);
+
     if (response.status) {
       return {
         data: response.data || [],
-        message: response.message || "Filter applied successfully",
+        message: response.message || "המסנן הוחל בהצלחה",
       };
     } else {
       return rejectWithValue({
-        message: response.message || "Failed to filter courses",
+        message: response.message || "נכשל לסנן קורסים",
         errors: response.errors ?? undefined,
       });
     }
   } catch (error: unknown) {
-    let message = "Failed to filter courses";
+    let message = "נכשל לסנן קורסים";
     let errors: Record<string, string[]> | undefined;
 
     if (error && typeof error === "object" && "response" in error) {
