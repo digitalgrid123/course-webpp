@@ -13,7 +13,7 @@
   "Sidebar": {
     "courses": "קורסים",
     "myCourses": "הקורסים שלי",
-    "instructors": "מדריכים",
+    "instructors": "מרצים",
     "cart": "סל הקניות",
     "settings": "הגדרות",
     "logout": "התנתק",
@@ -186,7 +186,7 @@
       "description": "גלה את כל המדריכים המומחים שלנו והתחל ללמוד מהטובים ביותר.",
       "keywords": "מדריכים, הוראה, למידה, קורסים, אוניברסיטה"
     },
-    "allInstructors": "כל המדריכים",
+    "allInstructors": "מרצים",
     "error": "נכשל בטעינת המדריכים",
     "retry": "נסה שוב",
     "noInstructors": "לא נמצאו מדריכים",

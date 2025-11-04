@@ -137,7 +137,7 @@ export const purchaseCourses = createAsyncThunk<
 >("cart/purchaseCourses", async (_, { getState, rejectWithValue }) => {
   try {
     const { cart } = getState();
-    console.log("🚀 ~ cart:", cart);
+
     const courseIds = cart.items.map((course) => course.id);
 
     if (courseIds.length === 0) {
@@ -145,24 +145,56 @@ export const purchaseCourses = createAsyncThunk<
     }
 
     const originalPrice = cart.totalAmount;
-    const finalPrice = cart.coupon.validated ? cart.coupon.newTotal : 1;
+    const finalPrice = cart.coupon.validated
+      ? cart.coupon.newTotal
+      : originalPrice;
+
+    // Ensure discount_price is at least 1
+    const discountPrice = Math.max(finalPrice, 1);
 
     const purchaseData: BuyCourseRequest = {
       course_ids: courseIds,
       price: originalPrice,
-      discount_price: finalPrice,
+      discount_price: discountPrice, // This will be at least 1
       ...(cart.coupon.validated && {
         coupon_code: cart.coupon.code,
+        coupon_id: cart.coupon.coupon_id, // Make sure to include this if available
       }),
     };
 
+    console.log("Purchase data:", purchaseData);
     const response = await buyCourseApi(purchaseData);
     return response;
   } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const backendMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.response?.data?.detail;
+
+      const status = error.response?.status;
+
+      if (backendMessage) {
+        return rejectWithValue(backendMessage);
+      }
+
+      switch (status) {
+        case 400:
+          return rejectWithValue("נתונים לא תקינים (400)");
+        case 422:
+          return rejectWithValue("שגיאת ולידציה (422)");
+        case 500:
+          return rejectWithValue("שגיאת שרת פנימית (500)");
+        default:
+          return rejectWithValue(`שגיאה לא ידועה (${status})`);
+      }
+    }
+
     if (error instanceof Error) {
       return rejectWithValue(error.message);
     }
-    return rejectWithValue("An error occurred during purchase");
+
+    return rejectWithValue("אירעה שגיאה בלתי צפויה");
   }
 });
 

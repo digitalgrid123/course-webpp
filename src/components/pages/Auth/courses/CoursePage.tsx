@@ -20,13 +20,19 @@ import { filterCourses } from "@/store/slices/courseSlice";
 import { Course, DegreeYear } from "@/types";
 import toast from "react-hot-toast";
 import { SkeletonGrid } from "@/components/common/SkeletonGrid/SkeletonGrid";
-import { useRouter, useSearchParams } from "next/navigation";
+
+// Local storage keys
+const FILTER_STORAGE_KEY = "course_filters";
+
+interface StoredFilters {
+  search: string;
+  degree: string;
+  year: string;
+}
 
 export default function CoursesPage() {
   const t = useTranslations("Courses");
   const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter();
-  const searchParams = useSearchParams();
 
   const {
     userProfile,
@@ -41,15 +47,33 @@ export default function CoursesPage() {
     (state: RootState) => state.degreeYears
   );
 
-  // Initialize state from URL parameters - default to empty (showing user's courses)
+  // Load filters from localStorage on component mount
+  const getStoredFilters = (): StoredFilters => {
+    if (typeof window === "undefined") {
+      return { search: "", degree: "", year: "" };
+    }
+
+    try {
+      const stored = localStorage.getItem(FILTER_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error("Error loading filters from localStorage:", error);
+    }
+
+    return { search: "", degree: "", year: "" };
+  };
+
+  // Initialize state from localStorage
   const [searchInput, setSearchInput] = useState(
-    searchParams.get("search") || ""
+    () => getStoredFilters().search
   );
   const [selectedDegree, setSelectedDegree] = useState(
-    searchParams.get("degree") || ""
+    () => getStoredFilters().degree
   );
   const [selectedYear, setSelectedYear] = useState(
-    searchParams.get("year") || ""
+    () => getStoredFilters().year
   );
   const [isDegreeDropdownOpen, setIsDegreeDropdownOpen] = useState(false);
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
@@ -60,20 +84,31 @@ export default function CoursesPage() {
   const yearDropdownRef = useRef<HTMLDivElement>(null);
   const searchTimeoutRef = useRef<number | null>(null);
 
-  // Update URL when filters change
-  const updateURL = useCallback(
+  // Save filters to localStorage
+  const saveFiltersToStorage = useCallback(
     (search: string, degree: string, year: string) => {
-      const params = new URLSearchParams();
+      if (typeof window === "undefined") return;
 
-      if (search && search !== "") params.set("search", search);
-      if (degree && degree !== "") params.set("degree", degree);
-      if (year && year !== "") params.set("year", year);
-
-      const newUrl = params.toString() ? `?${params.toString()}` : "";
-      router.replace(`/dashboard${newUrl}`, { scroll: false });
+      try {
+        const filters: StoredFilters = { search, degree, year };
+        localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filters));
+      } catch (error) {
+        console.error("Error saving filters to localStorage:", error);
+      }
     },
-    [router]
+    []
   );
+
+  // Clear all filters from storage
+  const clearFiltersFromStorage = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    try {
+      localStorage.removeItem(FILTER_STORAGE_KEY);
+    } catch (error) {
+      console.error("Error clearing filters from localStorage:", error);
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(fetchDashboardHome());
@@ -115,8 +150,8 @@ export default function CoursesPage() {
   }, [searchInput, selectedDegree, selectedYear]);
 
   const handleFilter = useCallback(() => {
-    // Update URL first
-    updateURL(searchInput, selectedDegree, selectedYear);
+    // Save filters to localStorage
+    saveFiltersToStorage(searchInput, selectedDegree, selectedYear);
 
     // If no filters applied, don't call API (show default user courses)
     if (!hasValidFiltersForAPI()) {
@@ -185,7 +220,7 @@ export default function CoursesPage() {
     degrees,
     dispatch,
     hasValidFiltersForAPI,
-    updateURL,
+    saveFiltersToStorage,
   ]);
 
   useEffect(() => {
@@ -345,7 +380,7 @@ export default function CoursesPage() {
     setSearchInput("");
     setSelectedDegree("");
     setSelectedYear("");
-    updateURL("", "", "");
+    clearFiltersFromStorage();
   };
 
   // Display text for dropdowns

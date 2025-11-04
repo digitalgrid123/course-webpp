@@ -521,7 +521,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ id }) => {
   }
 
   const videoData = getVideoData();
-  console.log("🚀 ~ CourseDetail ~ videoData:", videoData);
+
   const currentLesson = getCurrentLesson();
 
   const handleBackNavigation = () => {
