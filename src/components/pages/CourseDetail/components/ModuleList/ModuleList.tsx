@@ -53,19 +53,6 @@ export const ModuleList: React.FC<ModuleListProps> = ({
               <div className="bg-amber-gold p-4 rounded-lg mt-2 text-sm text-white/95">
                 <p className="font-semibold mb-3 text-right">שיעורים:</p>
                 <div className="space-y-2 relative">
-                  <div
-                    className="absolute right-3.5 top-0 w-0.5 bg-green-400 transition-all duration-500"
-                    style={{
-                      height: `${
-                        (courseModule.lessons.filter(
-                          (l) => l.watched_progress >= 100
-                        ).length /
-                          courseModule.lessons.length) *
-                        100
-                      }%`,
-                    }}
-                  ></div>
-
                   {courseModule.lessons.map((lesson, lessonIndex) => {
                     const isAccessible = isLessonAccessible(
                       moduleIndex,
