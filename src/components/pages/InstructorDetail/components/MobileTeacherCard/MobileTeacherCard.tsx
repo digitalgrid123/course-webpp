@@ -18,7 +18,7 @@ export const MobileTeacherCard: React.FC<MobileTeacherCardProps> = ({
     <>
       <div className="lg:hidden bg-linear-(--gradient-amber) rounded-2xl p-6 text-white mb-6">
         <div className="flex items-center gap-4">
-          <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-white/20 flex-shrink-0">
+          <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-white/20 shrink-0">
             {teacher.image ? (
               <Image
                 src={getFullUrl(teacher.image)}
@@ -50,7 +50,7 @@ export const MobileTeacherCard: React.FC<MobileTeacherCardProps> = ({
             <h1 className="text-lg font-bold mb-2 truncate">{teacher.name}</h1>
             <div className="flex items-center gap-2 text-sm">
               <svg
-                className="w-4 h-4 flex-shrink-0"
+                className="w-4 h-4 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
