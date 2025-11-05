@@ -67,7 +67,6 @@ const saveProgressToLocalStorage = (
       lessonId,
     };
     localStorage.setItem(key, JSON.stringify(data));
-    console.log(`✅ Saved to localStorage: ${key} = ${progress}%`);
   } catch (error) {
     console.error("Failed to save progress to localStorage:", error);
   }
@@ -83,9 +82,7 @@ const getProgressFromLocalStorage = (
 
     if (data) {
       const parsed = JSON.parse(data);
-      console.log(
-        `📖 Retrieved from localStorage: ${key} = ${parsed.progress}%`
-      );
+
       return parsed.progress;
     } else {
       console.log(`📖 No localStorage data for: ${key}`);
@@ -186,9 +183,6 @@ export const fetchCourseDetail = createAsyncThunk<
           // Only update if local progress is higher
           if (maxProgress > serverProgress) {
             lesson.watched_progress = maxProgress;
-            console.log(
-              `🔄 Updated lesson ${lesson.id} progress: ${serverProgress}% → ${maxProgress}%`
-            );
           }
         });
       });
@@ -448,7 +442,6 @@ const courseSlice = createSlice({
       })
       .addCase(updateLessonProgress.fulfilled, (state, action) => {
         state.progressLoading = false;
-        console.log("✅ Progress updated:", action.payload.message);
 
         if (state.courseDetail) {
           const { lessonId, progress } = action.payload;
@@ -456,11 +449,9 @@ const courseSlice = createSlice({
           for (const courseModule of state.courseDetail.modules) {
             const lesson = courseModule.lessons.find((l) => l.id === lessonId);
             if (lesson) {
-              // FIXED: Only update if new progress is higher
               if (progress > (lesson.watched_progress || 0)) {
                 lesson.watched_progress = progress;
 
-                // Recalculate module progress
                 const totalLessons = courseModule.lessons.length;
                 const totalProgress = courseModule.lessons.reduce(
                   (sum, l) => sum + (l.watched_progress || 0),

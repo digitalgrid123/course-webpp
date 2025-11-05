@@ -31,7 +31,6 @@ export const fetchDegreeYears = createAsyncThunk<
     const response = await fetchDegreeYearsApi();
 
     if (response.status && response.data) {
-      console.log("API Response Data:", response.data);
       return { data: response.data, message: response.message };
     } else {
       return rejectWithValue({
@@ -79,7 +78,6 @@ const degreeYearsSlice = createSlice({
         state.loading = false;
         state.degrees = action.payload.data || [];
         state.successMessage = action.payload.message;
-        console.log("Degrees stored in state:", state.degrees);
       })
       .addCase(fetchDegreeYears.rejected, (state, action) => {
         state.loading = false;

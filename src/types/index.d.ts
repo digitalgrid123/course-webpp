@@ -143,6 +143,17 @@ export interface Teacher {
   image: string;
   detail: string;
   courses_count: number;
+  courses?: Course[];
+}
+
+export interface Course {
+  id: number;
+  name: string;
+  image: string;
+  price: string;
+  modules_count: number;
+  lessons_count: number;
+  students_count?: number;
 }
 
 export interface Material {
@@ -359,4 +370,43 @@ export interface TeacherDetailResponse
   message: string;
   data: TeacherDetail;
   errors?: Record<string, string[]>;
+}
+
+export interface CourseModule {
+  id: number;
+  name: string;
+  sorting_order: number;
+  lessons: Lesson[];
+}
+
+export interface CourseDetail {
+  id: number;
+  name: string;
+  price: string;
+  price_type: string;
+  image: string;
+  details: string;
+  is_my_course: number;
+  modules_count: number;
+  teacher: Teacher;
+  modules: CourseModule[];
+}
+
+export interface VideoData {
+  url: string | null;
+  videoId: string | null;
+  isYouTube: boolean;
+  thumbnail: string | null;
+  lessonName: string | null;
+  lessonType: number | null;
+  meetingLink: string | null;
+  scheduleDateTime: string | null;
+  details: string | null;
+}
+
+export interface LessonMaterial {
+  id: number;
+  title: string;
+  file_type: number;
+  file: string;
 }

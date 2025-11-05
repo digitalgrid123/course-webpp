@@ -85,13 +85,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
           const seekTime = (initialProgress / 100) * duration;
           player.seekTo(seekTime, true);
           hasSetInitialProgress.current = true;
-
-          console.log("YouTube Player: Seeked to initial progress", {
-            initialProgress,
-            seekTime,
-            duration,
-            timestamp: new Date().toISOString(),
-          });
         }
       } catch (error) {
         console.error("Error setting initial progress:", error);
@@ -127,15 +120,6 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
               const seekTime = (initialProgress / 100) * duration;
               player.seekTo(seekTime, true);
               hasSetInitialProgress.current = true;
-
-              console.log(
-                "YouTube Player: Seeked to initial progress on play",
-                {
-                  initialProgress,
-                  seekTime,
-                  duration,
-                }
-              );
             }
           } catch (error) {
             console.error("Error setting initial progress on play:", error);
@@ -239,7 +223,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = ({
 
   return (
     <div className="bg-white rounded-4xl shadow-md overflow-hidden">
-      <div className="bg-gray-900 aspect-video relative rounded-4xl">
+      <div className="bg-gray-900 aspect-4/3 sm:aspect-video relative rounded-4xl">
         <div ref={containerRef} className="w-full h-full"></div>
         {!isAPIReady && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
