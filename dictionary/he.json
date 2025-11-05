@@ -59,7 +59,22 @@
       "keywords": "עגלת קניות, עגלת קורסים, תשלום, הרשמה לקורסים, עגלת למידה מקוונת, עגלת Vovo, פלטפורמת חינוך, הרשמה לקורסים, תשלום, השקעה בלמידה, בחירת קורסים, ניהול עגלה"
     }
   },
-
+  "ForgotPassword": {
+    "metadata": {
+      "title": "שכחת סיסמה",
+      "description": "אפס את הסיסמה שלך בצורה מאובטחת באמצעות האימייל הרשום שלך.",
+      "keywords": "שכחת סיסמה, איפוס סיסמה, שליחת קישור"
+    },
+    "title": "איפוס סיסמה",
+    "rememberPasswordPrefix": "זוכר את הסיסמה?",
+    "rememberPasswordAction": "התחבר",
+    "instructions": "הזן את כתובת האימייל שלך ונשלח לך קוד אימות לאיפוס הסיסמה.",
+    "emailLabel": "כתובת אימייל",
+    "emailPlaceholder": "הזן את האימייל שלך",
+    "emailInvalid": "אנא הזן כתובת אימייל תקינה",
+    "emailRequired": "אימייל הוא שדה חובה",
+    "resetPassword": "שלח קוד אימות"
+  },
   "Login": {
     "title": "התחברות",
     "subtitle": "התחברות לחשבונך",
@@ -75,8 +90,8 @@
     "noAccountAction": "לחץ לפתיחת חשבון",
     "emailRequired": "אימייל הוא שדה חובה",
     "emailInvalid": "אימייל לא תקין",
-    "passwordRequired": "הסיסמה חייבת להיות לפחות 6 תווים",
-    "passwordMinLength": "הסיסמה חייבת להיות לפחות 6 תווים",
+    "passwordRequired": "הסיסמה חייבת להיות לפחות 8 תווים",
+    "passwordMinLength": "הסיסמה חייבת להיות לפחות 8 תווים",
     "metadata": {
       "title": "כניסה - אפליקציית קורסים",
       "description": "גש לחשבונך כדי לנהל ולעקוב אחרי הקורסים שלך.",
@@ -120,19 +135,23 @@
   },
 
   "Verify": {
-    "title": "אימות חשבון",
-    "subtitle": "הזן את קוד האימות שנשלח למייל שלך",
     "verificationCodeLabel": "קוד אימות",
     "verificationCodePlaceholder": "הזן קוד בן 4 ספרות",
-    "didNotReceive": "לא קיבלת קוד?",
-    "resendCode": "שלח קוד מחדש",
-    "backToLogin": "חזרה להתחברות",
-    "backToRegister": "חזרה להרשמה",
-    "codeRequired": "קוד האימות נדרש",
-    "codeLengthError": "קוד האימות חייב להיות בן 4 ספרות",
-    "verify": "אמת",
+
     "successMessage": "החשבון שלך אומת בהצלחה",
     "errorMessage": "קוד האימות שגוי, נא לנסות שוב",
+    "title": "אמת את האימייל שלך",
+    "forgotPasswordTitle": "אפס את הסיסמה שלך",
+    "subtitle": "שלחנו קוד אימות ל-{email}",
+    "forgotPasswordSubtitle": "שלחנו קוד אימות ל-{email} כדי לאפס את הסיסמה שלך",
+    "codeLengthError": "קוד האימות חייב להיות 4 ספרות",
+    "codeRequired": "קוד אימות הוא שדה חובה",
+    "didNotReceive": "לא קיבלת את הקוד?",
+    "resendCode": "שלח שוב",
+    "verify": "אמת",
+    "backToLogin": "חזרה להתחברות",
+    "backToRegister": "חזרה להרשמה",
+    "backToForgotPassword": "חזרה לאיפוס סיסמה",
     "metadata": {
       "title": "אימות חשבון - פלטפורמת קורסים",
       "description": "אמת את החשבון שלך על ידי הזנת קוד האימות בן 6 הספרות שנשלח למייל שלך בעת ההרשמה.",
@@ -170,6 +189,27 @@
       "description": "התחל עם Courses App על ידי השלמת תהליך ההיכרות. בחר את התואר והשנה שלך כדי להתאים את החוויה שלך.",
       "keywords": "התהליך הראשוני, קורסים, הגדרת משתמש, חינוך, פלטפורמה"
     }
+  },
+  "ResetPassword": {
+    "metadata": {
+      "title": "איפוס סיסמה - שם האפליקציה שלך",
+      "description": "אפס את הסיסמה שלך וחזור לגישה לחשבון שלך",
+      "keywords": "איפוס סיסמה, שחזור חשבון, איפוס סיסמה"
+    },
+    "title": "אפס את הסיסמה שלך",
+    "rememberPasswordPrefix": "זוכר את הסיסמה?",
+    "rememberPasswordAction": "התחבר",
+    "instructions": "צור סיסמה חדשה לחשבון שלך",
+    "passwordLabel": "סיסמה חדשה",
+    "passwordPlaceholder": "הזן את הסיסמה החדשה שלך",
+    "confirmPasswordLabel": "אימות סיסמה חדשה",
+    "confirmPasswordPlaceholder": "אמת את הסיסמה החדשה שלך",
+    "passwordMinLength": "הסיסמה חייבת להיות לפחות 8 תווים",
+    "passwordRequired": "סיסמה היא שדה חובה",
+    "confirmPasswordRequired": "אנא אמת את הסיסמה שלך",
+    "passwordsMustMatch": "הסיסמאות חייבות להתאים",
+    "resetPassword": "אפס סיסמה",
+    "emailNotFound": "אימייל לא נמצא. אנא נסה לאפס את הסיסמה שלך שוב."
   },
 
   "Settings": {

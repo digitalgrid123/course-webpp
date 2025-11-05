@@ -16,8 +16,9 @@ interface FormInputFieldProps {
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   className?: string;
-  disabled?: boolean; // Add this line
-  value?: string; // Also add value prop for better form control
+  disabled?: boolean;
+  value?: string;
+  autoFocus?: boolean;
 }
 
 const FormInputField = forwardRef<HTMLInputElement, FormInputFieldProps>(

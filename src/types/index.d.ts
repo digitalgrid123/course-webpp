@@ -10,7 +10,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface LoginUser {
+export interface LoginUser extends User {
   id: number;
   first_name: string;
   last_name: string;
@@ -409,4 +409,63 @@ export interface LessonMaterial {
   title: string;
   file_type: number;
   file: string;
+}
+
+// Profile Types - Add these to your existing types/index.ts file
+
+export interface UpdateProfileRequest {
+  first_name: string;
+  last_name: string;
+  profile_image?: string;
+  old_password?: string;
+  password?: string;
+  password_confirmation?: string;
+}
+
+export interface User {
+  id: number;
+  type: string;
+  auth_type: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  profile_image: string;
+  status: number;
+  is_onboarded: number;
+  phone: string | null;
+  dob: string | null;
+  gender: number;
+  address: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateProfileResponse {
+  status: boolean;
+  message: string;
+  data: {
+    user: User;
+  };
+  errors: Record<string, string[]> | null;
+}
+
+// Add to your types file
+export interface ResetPasswordCredentials {
+  password: string;
+  password_confirmation: string;
+  token?: string;
+}
+
+export interface ResetPasswordResponseData {
+  user?: User;
+  token?: string;
+}
+
+export interface ResetPasswordResponse {
+  status: boolean;
+  message: string;
+  data?: ResetPasswordResponseData;
+  errors?: Record<string, string[]> | null;
 }

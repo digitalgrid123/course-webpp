@@ -77,13 +77,29 @@
     "noAccountAction": "Click to create an account",
     "emailRequired": "Email is required",
     "emailInvalid": "Invalid email",
-    "passwordRequired": "Password must be at least 6 characters",
-    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordRequired": "Password must be at least 8 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
     "metadata": {
       "title": "Login - Courses App",
       "description": "Access your account to manage and track your courses.",
       "keywords": "login, authentication, courses, user account"
     }
+  },
+  "ForgotPassword": {
+    "metadata": {
+      "title": "Forgot Password",
+      "description": "Reset your password securely using your registered email.",
+      "keywords": "forgot password, reset password, email reset"
+    },
+    "title": "Reset Your Password",
+    "rememberPasswordPrefix": "Remember your password?",
+    "rememberPasswordAction": "Sign in",
+    "instructions": "Enter your email address and we'll send you a verification code to reset your password.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "Enter your email",
+    "emailInvalid": "Please enter a valid email address",
+    "emailRequired": "Email is required",
+    "resetPassword": "Send Verification Code"
   },
 
   "Signup": {
@@ -121,8 +137,18 @@
   },
 
   "Verify": {
-    "title": "Account Verification",
-    "subtitle": "Enter the verification code sent to your email",
+    "title": "Verify Your Email",
+    "forgotPasswordTitle": "Reset Your Password",
+    "subtitle": "We sent a verification code to {email}",
+    "forgotPasswordSubtitle": "We sent a verification code to {email} to reset your password",
+    "codeLengthError": "Verification code must be 4 digits",
+    "codeRequired": "Verification code is required",
+    "didNotReceive": "Didn't receive the code?",
+    "resendCode": "Resend Code",
+    "verify": "Verify",
+    "backToLogin": "Back to Login",
+    "backToRegister": "Back to Register",
+    "backToForgotPassword": "Back to Forgot Password",
     "metadata": {
       "title": "Account Verification - Courses Platform",
       "description": "Verify your account by entering the 6-digit verification code sent to your email upon registration.",
@@ -130,17 +156,31 @@
     },
     "verificationCodeLabel": "Verification Code",
     "verificationCodePlaceholder": "Enter 4-digit code",
-    "didNotReceive": "Didn't receive a code?",
-    "resendCode": "Resend code",
-    "backToLogin": "Back to login",
-    "backToRegister": "Back to Register",
-    "codeRequired": "Verification code is required",
-    "codeLengthError": "Verification code must be 4 digits",
-    "verify": "Verify",
+
     "successMessage": "Your account has been verified successfully",
     "errorMessage": "Incorrect verification code, please try again"
   },
-
+  "ResetPassword": {
+    "metadata": {
+      "title": "Reset Password - Your App Name",
+      "description": "Reset your password and regain access to your account",
+      "keywords": "reset password, account recovery, password reset"
+    },
+    "title": "Reset Your Password",
+    "rememberPasswordPrefix": "Remember your password?",
+    "rememberPasswordAction": "Sign in",
+    "instructions": "Create a new password for your account",
+    "passwordLabel": "New Password",
+    "passwordPlaceholder": "Enter your new password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "confirmPasswordPlaceholder": "Confirm your new password",
+    "passwordMinLength": "Password must be at least 8 characters",
+    "passwordRequired": "Password is required",
+    "confirmPasswordRequired": "Please confirm your password",
+    "passwordsMustMatch": "Passwords must match",
+    "resetPassword": "Reset Password",
+    "emailNotFound": "Email not found. Please try resetting your password again."
+  },
   "Onboarding": {
     "loading": "loading...",
     "select_degree": "Select your degree",

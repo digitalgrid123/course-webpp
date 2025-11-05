@@ -299,19 +299,29 @@ export const filterCourses = createAsyncThunk<
       });
     }
   } catch (error: unknown) {
-    let message = "נכשל לסנן קורסים";
-    let errors: Record<string, string[]> | undefined;
-
-    if (error && typeof error === "object" && "response" in error) {
-      const axiosError = error as AxiosError<{
-        message: string;
-        errors?: Record<string, string[]> | null;
-      }>;
-      message = axiosError.response?.data?.message || message;
-      errors = axiosError.response?.data?.errors ?? undefined;
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "response" in (error as Record<string, unknown>)
+    ) {
+      const err = error as AxiosError<{ message: string }>;
+      if (err.response?.status === 404) {
+        return {
+          data: [],
+          message: "לא נמצאו קורסים מתאימים",
+        };
+      }
+      const message = err.response?.data?.message || "נכשל לסנן קורסים";
+      return {
+        data: [],
+        message,
+      };
     }
 
-    return rejectWithValue({ message, errors });
+    return {
+      data: [],
+      message: "נכשל לסנן קורסים",
+    };
   }
 });
 

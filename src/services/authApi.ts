@@ -8,6 +8,8 @@ import {
   SendOtpResponse,
   VerifyOtpCredentials,
   VerifyOtpResponse,
+  ResetPasswordCredentials,
+  ResetPasswordResponse,
 } from "@/types";
 
 export const loginApi = (credentials: LoginCredentials) => {
@@ -32,4 +34,11 @@ export const verifyOtpApi = (credentials: VerifyOtpCredentials) => {
   return apiConnection.auth
     .post("/verify-otp", credentials)
     .then((response) => response as unknown as VerifyOtpResponse);
+};
+
+// Add reset password API
+export const resetPasswordApi = (credentials: ResetPasswordCredentials) => {
+  return apiConnection.auth
+    .post("/update-password", credentials)
+    .then((response) => response as unknown as ResetPasswordResponse);
 };

@@ -38,6 +38,7 @@ export default function VerifyPage() {
   const [resendCooldown, setResendCooldown] = useState(30);
   const [canResend, setCanResend] = useState(false);
   const [source, setSource] = useState("login");
+  const [email, setEmail] = useState<string>("");
 
   const validationSchema = Yup.object().shape({
     verification_code: Yup.string()
@@ -63,8 +64,35 @@ export default function VerifyPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setSource(params.get("source") || "login");
-  }, []);
+    const sourceParam = params.get("source") || "login";
+    setSource(sourceParam);
+
+    // Get email from appropriate source
+    let userEmail = "";
+
+    if (sourceParam === "signup") {
+      userEmail = registeredUser?.user?.email || "";
+    } else if (sourceParam === "login") {
+      userEmail = user?.email || "";
+    } else if (sourceParam === "forgot-password") {
+      // Get email from localStorage for forgot password flow
+      userEmail = localStorage.getItem("verificationEmail") || "";
+    }
+
+    setEmail(userEmail);
+
+    // If no email found, show error and redirect
+    if (!userEmail) {
+      toast.error("Email not found. Please try again.");
+      if (sourceParam === "forgot-password") {
+        router.push("/forgot-password");
+      } else if (sourceParam === "signup") {
+        router.push("/register");
+      } else {
+        router.push("/login");
+      }
+    }
+  }, [registeredUser, user, router]);
 
   useEffect(() => {
     if (fieldErrors) {
@@ -104,9 +132,8 @@ export default function VerifyPage() {
   }, [resendCooldown]);
 
   const onSubmit = async (data: VerifyFormValues) => {
-    const email = registeredUser?.user?.email || user?.email;
     if (!email) {
-      toast.error("Email not found. Please register or log in again.");
+      toast.error("Email not found. Please try again.");
       return;
     }
 
@@ -116,22 +143,34 @@ export default function VerifyPage() {
     const resultAction = await dispatch(verifyOtp(credentials));
 
     if (verifyOtp.fulfilled.match(resultAction)) {
+      // Clean up stored data
       localStorage.removeItem("loginFormData");
       localStorage.removeItem("signupFormData");
+      localStorage.removeItem("verificationEmail"); // Clean forgot password email
       dispatch(clearRegisteredUser());
 
-      const isOnboarded = resultAction.payload.data.user.is_onboarded;
-      if (isOnboarded === 0) {
-        router.push("/onboarding");
-      } else if (isOnboarded === 1) {
-        document.cookie = "isLogged=true; path=/";
-        router.push("/dashboard");
+      const userData = resultAction.payload.data.user;
+      const userStatus = userData.status;
+      const isOnboarded = userData.is_onboarded;
+
+      // Handle different flows based on source
+      if (source === "forgot-password") {
+        // Redirect to reset password page after verification
+        router.push("/reset-password");
+      } else if (userStatus === 0) {
+        router.push("/verify?source=login");
+      } else if (userStatus === 1) {
+        if (isOnboarded === 0) {
+          router.push("/onboarding");
+        } else if (isOnboarded === 1) {
+          document.cookie = "isLogged=true; path=/";
+          router.push("/dashboard");
+        }
       }
     }
   };
 
   const handleResendCode = async () => {
-    const email = registeredUser?.user?.email || user?.email;
     if (!canResend || !email) return;
 
     dispatch(clearAuthErrors());
@@ -145,9 +184,31 @@ export default function VerifyPage() {
     }
   };
 
-  const backLink = source === "signup" ? "/register" : "/login";
-  const backLabel =
-    source === "signup" ? t("backToRegister") : t("backToLogin");
+  // Determine back link based on source
+  const getBackLink = () => {
+    switch (source) {
+      case "signup":
+        return "/register";
+      case "forgot-password":
+        return "/forgot-password";
+      default:
+        return "/login";
+    }
+  };
+
+  const getBackLabel = () => {
+    switch (source) {
+      case "signup":
+        return t("backToRegister");
+      case "forgot-password":
+        return t("backToForgotPassword");
+      default:
+        return t("backToLogin");
+    }
+  };
+
+  const backLink = getBackLink();
+  const backLabel = getBackLabel();
 
   return (
     <div
@@ -159,9 +220,15 @@ export default function VerifyPage() {
         <div className="w-full max-w-md flex flex-col justify-center h-full">
           <div className={`mb-8 ${isRTL ? "text-right" : "text-left"}`}>
             <h1 className="text-4xl font-bold text-charcoal-blue mb-2 tracking-tight-pro leading-snug">
-              {t("title")}
+              {source === "forgot-password"
+                ? t("forgotPasswordTitle")
+                : t("title")}
             </h1>
-            <p className="text-sm text-slate-gray mb-1">{t("subtitle")}</p>
+            <p className="text-sm text-slate-gray mb-1">
+              {source === "forgot-password"
+                ? t("forgotPasswordSubtitle", { email })
+                : t("subtitle", { email })}
+            </p>
           </div>
 
           <Form {...form}>
