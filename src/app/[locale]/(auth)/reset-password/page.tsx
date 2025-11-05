@@ -1,7 +1,6 @@
-import { use } from "react";
+import ResetPasswordPage from "@/components/pages/Auth/ResetPasswordPage";
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import CoursePage from "@/components/pages/courses/CoursePage";
-import ClientLayout from "@/components/layouts/ClientLayout";
+import { use } from "react";
 
 export async function generateMetadata({
   params,
@@ -10,8 +9,7 @@ export async function generateMetadata({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("Courses");
-
+  const t = await getTranslations("ResetPassword");
   return {
     title: t("metadata.title"),
     description: t("metadata.description"),
@@ -19,17 +17,12 @@ export async function generateMetadata({
   };
 }
 
-export default function Courses({
+export default function ResetPassword({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = use(params);
   setRequestLocale(locale);
-
-  return (
-    <ClientLayout>
-      <CoursePage />
-    </ClientLayout>
-  );
+  return <ResetPasswordPage />;
 }

@@ -11,7 +11,15 @@ export default function middleware(req: NextRequest) {
   const isLogged = req.cookies.get("isLogged")?.value === "true";
   const { pathname } = req.nextUrl;
 
-  const publicRoutes = ["/", "/login", "/register", "/onboarding", "/verify"];
+  const publicRoutes = [
+    "/",
+    "/login",
+    "/register",
+    "/onboarding",
+    "/verify",
+    "forgot-password",
+    "reset-password",
+  ];
 
   if (isLogged && publicRoutes.includes(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
