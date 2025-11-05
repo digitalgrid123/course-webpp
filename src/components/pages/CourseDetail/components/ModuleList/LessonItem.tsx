@@ -26,6 +26,12 @@ export const LessonItem: React.FC<LessonItemProps> = ({
           : "hover:bg-white/10 cursor-pointer"
       }`}
     >
+      <div
+        className={`absolute right-2.5 w-2 h-2 rounded-full ${
+          lesson.watched_progress > 100 ? "bg-green-400" : "bg-white/50"
+        }`}
+      ></div>
+
       <span className="text-right flex-1 mr-3 relative">{lesson.name}</span>
     </div>
   );
